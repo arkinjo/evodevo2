@@ -1,15 +1,15 @@
-module Hoge
 include("base.jl")
+include("env.jl")
 include("genome.jl")
+include("cell.jl")
+include("indiv.jl")
+include("population.jl")
 
-ds = default_setting
-genome1 = make_genome(ds.num_layers, ds.num_components, ds.feedback_loops)
-genome2 = make_genome(ds.num_layers, ds.num_components, ds.feedback_loops)
-jldopen("genome.jld2","w") do file
-    file["genome1"] = genome1
+s = default_setting
+if ARGS[1] == "nocue"
+    s.with_cue = false
 end
-jldopen("genome.jld2","a+") do file
-    file["genome2"] = genome2
-end
+s = set_omegas(s)
+println("#with_cue= $(s.with_cue)")
 
-end
+train_epochs(10, 200, s)
