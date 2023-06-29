@@ -35,14 +35,13 @@ function get_cue(env::Environment, s::Setting)
     m = Int64(round(s.env_noise*length(cue)))
     r = randperm(length(cue))
     for i in r[1:m]
-        # cue[i] = s.with_cue ? -cue[i] : rand([-1.0, 1.0])
+#        cue[i] = s.with_cue ? -cue[i] : rand([-1.0, 1.0])
         cue[i] = -cue[i]
     end
     Environment(cue)
 end
 
-function change_env(env::Environment, seed, s::Setting)
-    Random.seed!(seed)
+function change_env(env::Environment, s::Setting)
     m = Int(round(length(env.p)*s.denv))
     r = randperm(s.num_env)
     p = copy(env.p)
@@ -53,11 +52,12 @@ function change_env(env::Environment, seed, s::Setting)
 end
 
 function change_envS(envs::EnvironmentS, seed, s::Setting)
+    Random.seed!(seed)
     nenvs = Dict{Tuple{Int64,Int64},Environment}()
     a = 0
     for (k,v) in envs
         a += 1
-        nenvs[k] = change_env(v, seed+a, s)
+        nenvs[k] = change_env(v, s)
     end
     nenvs
 end

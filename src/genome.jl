@@ -92,27 +92,25 @@ function mutate(A::GenomeMat, density::Float64, mut_rate::Float64)
             A[i,j] = 1.0
         end
     end
-    SparseArrays.dropzeros!(A)
+    dropzeros!(A)
 end
 
 function mutate1(A::GenomeMat, density::Float64)
     (m,n) = size(A)
-    d2 = 0.5*density
     i = rand(1:m)
     j = rand(1:n)
-    q = rand()
-    A[i,j] = 0.0
-    if q < d2
-        A[i,j] = -1.0
-    elseif q < density
-        A[i,j] = 1.0
+
+    if rand() >= density
+        A[i,j] = 0.0
+    else
+        A[i,j] = rand((-1.0, 1.0))
     end
     A
 end
 
 function mutate(genome::Genome, muts::Mutation, s::Setting)
     nmut = rand(muts.num_mut)
-    for k = 1:nmut
+    for _ = 1:nmut
         (l,k) = muts.mats[rand(muts.cats)]
         mutate1(genome.B[l][k], s.topology[l][k])
     end
@@ -130,15 +128,15 @@ function mate(mat1::GenomeMat, mat2::GenomeMat)
     for i = 1:m
         r = rand()
         if r < 0.5
-            nmat1[i,:] = mat1[i,:]
-            nmat2[i,:] = mat2[i,:]
+            nmat1[i,:] = copy(mat1[i,:])
+            nmat2[i,:] = copy(mat2[i,:])
         else
-            nmat2[i,:] = mat1[i,:]
-            nmat1[i,:] = mat2[i,:]
+            nmat2[i,:] = copy(mat1[i,:])
+            nmat1[i,:] = copy(mat2[i,:])
         end
     end
-    SparseArrays.dropzeros!(nmat1)
-    SparseArrays.dropzeros!(nmat2)
+    dropzeros!(nmat1)
+    dropzeros!(nmat2)
     nmat1, nmat2
 end
 

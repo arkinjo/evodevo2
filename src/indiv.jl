@@ -1,4 +1,5 @@
 using LinearAlgebra
+using Statistics
 
 struct Individual
     id::Int64
@@ -47,8 +48,7 @@ end
 function set_fitness(indiv::Individual, envs::EnvironmentS, s::Setting)
     e = get_selecting_envs(envs, s)
     f = get_selected_phenotype(indiv, s)
-    tdev = norm((e-f), 1)/(s.num_cell_x * s.num_env)
-
+    tdev = (e-f) .|> abs |> mean
     indiv.mismatch[] = tdev
     if indiv.ndev[] < s.num_dev
         wdev = max(0, indiv.ndev[] - 100)/20.0

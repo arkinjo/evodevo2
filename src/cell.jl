@@ -1,3 +1,5 @@
+using Statistics
+
 struct Cell
     states::Vector{Vector{Float64}}
     pave::Vector{Float64}
@@ -5,10 +7,9 @@ struct Cell
 end
 
 function Cell(ncomps::Vector{Int64})
-    states = Vector{Vector{Float64}}()
-    for n in ncomps
-        push!(states, fill(1.0, n))
-    end
+    states = map(n -> fill(1.0, n), ncomps)
+    #    states[end-1] = ones(ncomps[end-1])
+    # states[3] = ones(ncomps[3])
     pave = zeros(length(states[end]))
     pvar = zeros(length(states[end]))
     Cell(states, pave, pvar)
@@ -18,7 +19,7 @@ function (cell::Cell)(k)
     cell.states[k]
 end
 
-phenotype(cell::Cell) = cell.pave #cell.states[end]
+phenotype(cell::Cell) = cell.pave # cell.states[end]
 
 function get_face(cell::Cell, face::Face)
     p = phenotype(cell)
@@ -37,12 +38,12 @@ function update_pave(nstep, cell::Cell, s::Setting)
         cell.pave[i] += incr
         cell.pvar[i] = (1 - α)*(v + d*incr)
     end
-    sum(cell.pvar)/length(cell.pvar)
+    mean(cell.pvar)
 end
 
 function DevStep(istep, cell, genome, s::Setting)
     for l = 2:s.num_layers
-        ϕ = fill(0.0, s.num_components[l])
+        ϕ = s.state_memory[l]*copy(cell.states[l])
         for (k,mat) in genome.B[l]
             if l == 2 && k == 1
                 ϕ += mat * (cell.states[k] - phenotype(cell))
@@ -50,7 +51,6 @@ function DevStep(istep, cell, genome, s::Setting)
                 ϕ += mat * cell.states[k]
             end
         end
-        ϕ += s.state_memory[l]*cell.states[l]
         cell.states[l] = s.afuncs[l].(ϕ * s.omega[l]) 
     end
     update_pave(istep, cell, s)

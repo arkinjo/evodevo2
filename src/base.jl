@@ -4,6 +4,16 @@ using DataStructures
 @enum Face North East South West
 @enum NAEnv Ancestral Novel
 
+const sixpii = 6.0/π
+const sqrt3 = √3.0
+function lcatan(x)
+    sixpii*atan(x/sqrt3)
+end
+
+function relu(x)
+    max(0, x)
+end
+
 mutable struct Setting
     seed::Int64
     with_cue::Bool
@@ -25,17 +35,14 @@ mutable struct Setting
     selstrength::Float64
 end
 
-const sixpii = 6.0/π
-const sqrt3 = √3.0
-function lcatan(x)
-    sixpii*atan(x/sqrt3)
-end
+# default topology has no feedback loops.
+default_topology = [OrderedDict(),
+                    OrderedDict(1 => 0.02),
+                    OrderedDict(2 => 0.02),
+                    OrderedDict(3 => 0.02),
+                    OrderedDict(4 => 0.02)]
 
-function relu(x)
-    max(0, x)
-end
-
-default_setting = Setting(13579 # seed
+default_setting() = Setting(13579 # seed
                           , true # with_cue
                           , 200 # max_pop
                           , 1   # num_cell_x
@@ -44,16 +51,12 @@ default_setting = Setting(13579 # seed
                           , 5   # num_layers
                           , 200 # num_dev 
                           , [200, 200, 200, 200, 200]      # num_components
-                          , [OrderedDict(),
-                             OrderedDict(1 => 0.02, 2 => 0.02),
-                             OrderedDict(2 => 0.02, 3 => 0.02),
-                             OrderedDict(3 => 0.02, 4 => 0.02),
-                             OrderedDict(4 => 0.02)] # topology
-                          , fill(1.0, 5) # omega (use "set_omegas")
-                          , [identity, tanh, tanh, tanh, tanh] # afuncs
-                          , [0.0, 0.8, 0.0, 0.0, 0.0] # state_memory
-                          , 0.05 # env_noise
-                          , 0.005 # mut_rate
+                          , default_topology # topology
+                          , ones(5) # omega (use "set_omegas")
+                          , [identity, lcatan, lcatan, lcatan, tanh] # afuncs
+                          , [0.0, 0.0, 0.0, 0.0, 0.0] # state_memory
+                          , 0.04 # env_noise
+                          , 0.001 # mut_rate
                           , 1e-5 # conv_dev
                           , 0.5  # magnitude of environmental changes [0,1]
                           , 20.0 # selstrength

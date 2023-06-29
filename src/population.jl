@@ -12,6 +12,7 @@ struct PopStats
     fitness::Float64
     ndev::Float64
     ppheno::Float64
+    nparents::Int64
 end
 
 function PopStats(pop::Population, denv, env0, s::Setting)
@@ -20,18 +21,20 @@ function PopStats(pop::Population, denv, env0, s::Setting)
     ndev = 0.0
     ppheno = 0.0    
     npop = length(pop.indivs)
+    npar = Dict()
     for indiv in pop.indivs
         mismatch += indiv.mismatch[]
         fitness += indiv.fitness[1]
         ndev += indiv.ndev[]
         f = get_selected_phenotype(indiv, s) - env0
         ppheno += dot(f, denv)
+        npar[indiv.mom_id] = getkey(npar, indiv.mom_id, 0) + 1
     end
     mismatch /= npop
     fitness /= npop
     ndev /= npop
     ppheno /= npop
-    PopStats(mismatch, fitness, ndev, ppheno)
+    PopStats(mismatch, fitness, ndev, ppheno, length(npar))
 end
 
 function Population(naenv::NAEnv, s::Setting)
@@ -52,7 +55,7 @@ function develop(pop::Population, envs::EnvironmentS, s::Setting)
 end
 
 function set_relfit(pop::Population)
-    maxfit = max(map(ind -> ind.fitness[1], pop.indivs)...)
+    maxfit = mapreduce(ind -> ind.fitness[1], max, pop.indivs)
     for indiv in pop.indivs
         indiv.fitness[2] =  indiv.fitness[1]/maxfit
     end
@@ -63,7 +66,7 @@ function select(pop::Population, s::Setting)
     parents = Vector{Individual}()
     npop = 0
     while npop <= s.max_pop
-        indiv = pop.indivs[rand(irange)]
+        indiv = rand(pop.indivs)
         if rand() < indiv.fitness[2]
             push!(parents, indiv)
             npop += 1
@@ -79,7 +82,7 @@ function reproduce(pop::Population, muts::Mutation, s::Setting) ::Vector{Individ
     for i = 1:2:s.max_pop
         dad = parents[i]
         mom = parents[i+1]
-        # println("#momdad $(dad.id) $(mom.id)")
+#        println("#momdad $(dad.id) $(mom.id)")
         geno1, geno2 = mate(dad.genome, mom.genome)
         mutate(geno1, muts, s)
         mutate(geno2, muts, s)
@@ -104,18 +107,18 @@ function evolve(iepoch::Int64, ngen::Int64, pop1::Population
         end
     e0 = get_selecting_envs(env0, s)
     e1 = get_selecting_envs(env1, s)
-    de = e1 - e0
+    de = (e1 - e0)
     denv = de/dot(de, de)
     muts = Mutation(s)
     for igen = 1:ngen
         develop(pop1, env1, s)
         ps1 = PopStats(pop1, denv, e0, s)
         @printf "%3d\t%3d" iepoch igen
-        @printf "\t%e\t%e\t%e\t%e" ps1.mismatch ps1.fitness ps1.ndev ps1.ppheno
+        @printf "\t%e\t%e\t%e\t%e\t%d" ps1.mismatch ps1.fitness ps1.ndev ps1.ppheno ps1.nparents
         if trajfile != nothing
             develop(pop0, env0, s)
             ps0 = PopStats(pop0, denv, e0, s)
-            @printf "\t%e\t%e\t%e\t%e" ps0.mismatch ps0.fitness ps0.ndev ps0.ppheno
+            @printf "\t%e\t%e\t%e\t%e\t%d" ps0.mismatch ps0.fitness ps0.ndev ps0.ppheno ps0.nparents
             
             name0 = @sprintf("pop0_%.3d", igen)
             name1 = @sprintf("pop1_%.3d", igen)
