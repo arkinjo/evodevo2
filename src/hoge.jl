@@ -7,8 +7,10 @@ t = Template(;
            user="arkinjo",
            authors=["Akira Kinjo"],
            plugins=[
-               License(name="CC0"),
+               License(name="MIT"),
                Git(),
                GitHubActions(),
            ],
        )
+
+t("EvoDevo2")
