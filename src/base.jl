@@ -3,6 +3,7 @@ using DataStructures
 
 @enum Face North East South West
 @enum NAEnv Ancestral Novel
+@enum TrainMode TestMode
 
 const sixpii = 6.0/π
 const sqrt3 = √3.0
@@ -15,6 +16,7 @@ function relu(x)
 end
 
 mutable struct Setting
+    basename::String
     seed::Int64
     with_cue::Bool
     max_pop::Int64
@@ -35,32 +37,47 @@ mutable struct Setting
     selstrength::Float64
 end
 
-# default topology has no feedback loops.
-default_topology = [OrderedDict(),
-                    OrderedDict(1 => 0.02),
-                    OrderedDict(2 => 0.02),
-                    OrderedDict(3 => 0.02),
-                    OrderedDict(4 => 0.02)]
+function default_setting(basename::String, num_layers::Int64=5, seed::Int64=13579)
+    num_components = fill(200, num_layers)
+    num_env = 200 ÷ 4
+    topology = Vector()
+    afuncs = Vector()
+    for i = 1:num_layers
+        push!(topology, OrderedDict())
+        if i > 1 
+            topology[i][i-1] = 0.02
+            if i < num_layers
+                topology[i][i] = 0.02
+                push!(afuncs, lcatan)
+            else
+                push!(afuncs, tanh)
+            end
+        elseif i == 1
+            push!(afuncs, identity)
+        end
 
-default_setting() = Setting(13579 # seed
-                          , true # with_cue
-                          , 200 # max_pop
-                          , 1   # num_cell_x
-                          , 1   # num_cell_y
-                          , 50  # num_env / face
-                          , 5   # num_layers
-                          , 200 # num_dev 
-                          , [200, 200, 200, 200, 200]      # num_components
-                          , default_topology # topology
-                          , ones(5) # omega (use "set_omegas")
-                          , [identity, lcatan, lcatan, lcatan, tanh] # afuncs
-                          , [0.0, 0.0, 0.0, 0.0, 0.0] # state_memory
-                          , 0.04 # env_noise
-                          , 0.001 # mut_rate
-                          , 1e-5 # conv_dev
-                          , 0.5  # magnitude of environmental changes [0,1]
-                          , 20.0 # selstrength
-                          )
+    end
+    Setting(basename,
+            seed,
+            true, # with_cue
+            200, # max_pop
+            1,   # num_cell_x
+            1,   # num_cell_y
+            num_env,
+            num_layers,   # num_layers
+            200, # num_dev 
+            num_components,      # num_components
+            topology, 
+            ones(num_layers), # omega (use "set_omegas")
+            afuncs, 
+            zeros(num_layers), # state_memory
+            0.04, # env_noise
+            0.001, # mut_rate
+            1e-5, # conv_dev
+            0.5,  # magnitude of environmental changes [0,1]
+            20.0 # selstrength
+            )
+end
 
 function set_omegas(s::Setting)
     for l = 2:s.num_layers

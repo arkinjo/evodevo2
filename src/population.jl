@@ -48,7 +48,7 @@ end
 
 function develop(pop::Population, envs::EnvironmentS, s::Setting)
     Threads.@threads for indiv in pop.indivs
-        set_envs(indiv, envs, s)
+        set_cues(indiv, envs, s)
         develop(indiv, envs, s)
     end
     set_relfit(pop)
@@ -94,13 +94,13 @@ function reproduce(pop::Population, muts::Mutation, s::Setting) ::Vector{Individ
     offspring
 end
 
-function evolve(iepoch::Int64, ngen::Int64, pop1::Population
-                , env0::EnvironmentS, env1::EnvironmentS
-                , trajfile, s::Setting)
+function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
+                env0::EnvironmentS, env1::EnvironmentS,
+                log, trajfile, s::Setting)
     indivs0 = deepcopy(pop1.indivs)
     pop0 = Population(1, Ancestral, indivs0)
     file =
-        if trajfile != nothing
+        if mode == TestMode && trajfile != nothing
             jldopen(trajfile,"w", compress=true)
         else
             nothing
@@ -113,37 +113,55 @@ function evolve(iepoch::Int64, ngen::Int64, pop1::Population
     for igen = 1:ngen
         develop(pop1, env1, s)
         ps1 = PopStats(pop1, denv, e0, s)
-        @printf "%3d\t%3d" iepoch igen
-        @printf "\t%e\t%e\t%e\t%e\t%d" ps1.mismatch ps1.fitness ps1.ndev ps1.ppheno ps1.nparents
-        if trajfile != nothing
+        @printf(log, "%3d\t%3d", iepoch, igen)
+        @printf(log, "\t%e\t%e\t%e\t%e\t%d", ps1.mismatch, ps1.fitness,
+                ps1.ndev, ps1.ppheno, ps1.nparents)
+        if mode == TestMode
             develop(pop0, env0, s)
             ps0 = PopStats(pop0, denv, e0, s)
-            @printf "\t%e\t%e\t%e\t%e\t%d" ps0.mismatch ps0.fitness ps0.ndev ps0.ppheno ps0.nparents
-            
-            name0 = @sprintf("pop0_%.3d", igen)
-            name1 = @sprintf("pop1_%.3d", igen)
-            file[name0] = pop0
-            file[name1] = pop1
+            @printf(log, "\t%e\t%e\t%e\t%e\t%d",
+                    ps0.mismatch, ps0.fitness, ps0.ndev, ps0.ppheno,
+                    ps0.nparents)
+            if file != nothing
+                name0 = @sprintf("pop0_%.3d", igen)
+                name1 = @sprintf("pop1_%.3d", igen)
+                file[name0] = pop0
+                file[name1] = pop1
+            end
             
             indivs0 = reproduce(pop1, muts, s)
             pop0 = Population(igen+1, Ancestral, indivs0)
         end
-        @printf "\n"
+        @printf(log, "\n")
         indivs1 = reproduce(pop1, muts, s)
         pop1 = Population(igen+1, Novel, indivs1)
     end
-    if trajfile != nothing
+    if file != nothing
         close(file)
     end
     pop1
 end
 
-function train_epochs(nepoch::Int64, ngen::Int64, s::Setting)
+function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
     envs0 = make_environments(s)
     pop = Population(Novel, s)
     for iepoch = 1:nepoch
         envs1 = change_envS(envs0, iepoch + s.seed, s)
-        pop = evolve(iepoch, ngen, pop, envs0, envs1, nothing, s)
-        envs0 = deepcopy(envs1)
+        pop = evolve(TrainMode, iepoch, ngen, pop, envs0, envs1,
+                     log, nothing, s)
+        envs0 = envs1
+        flush(log)
+    end
+    envs0, pop
+end
+
+function test_epochs(nepoch::Int64, ngen::Int64,
+                     pop::Population, envs::EnvironmentS,
+                     log, trajfile::String, s::Setting)
+    envs0 = copy(envs)
+    for iepoch = 1:nepoch
+        envs1 = change_envS(envs0, iepoch + s.seed, s)
+        pop = evolve(TestMode, iepoch, ngen, pop, envs0, envs1, log, trajfile, s)
+        envs0 = envs1
     end
 end

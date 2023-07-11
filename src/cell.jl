@@ -43,7 +43,7 @@ end
 
 function DevStep(istep, cell, genome, s::Setting)
     for l = 2:s.num_layers
-        ϕ = s.state_memory[l]*copy(cell.states[l])
+        ϕ = s.state_memory[l]*cell.states[l]
         for (k,mat) in genome.B[l]
             if l == 2 && k == 1
                 ϕ += mat * (cell.states[k] - phenotype(cell))
