@@ -1,5 +1,6 @@
 using Printf
 using LinearAlgebra
+using ThreadsX
 
 struct Population
     gen::Int64 # generation
@@ -47,7 +48,7 @@ end
 
 
 function develop(pop::Population, envs::EnvironmentS, s::Setting)
-    Threads.@threads for indiv in pop.indivs
+    ThreadsX.foreach(pop.indivs) do indiv
         set_cues(indiv, envs, s)
         develop(indiv, envs, s)
     end
@@ -75,41 +76,36 @@ function select(pop::Population, s::Setting)
     parents
 end
 
+
+
 function reproduce(pop::Population, muts::Mutation, s::Setting) ::Vector{Individual}
     irange = 1:length(pop.indivs)
     parents = select(pop, s)
-    offspring = Vector{Individual}()
-    for i = 1:2:s.max_pop
-        dad = parents[i]
-        mom = parents[i+1]
-#        println("#momdad $(dad.id) $(mom.id)")
+    dads = parents[1:2:end-1]
+    moms = parents[2:2:end]
+    ThreadsX.mapreduce(append!, 1:length(dads), dads,moms) do i,dad,mom
         geno1, geno2 = mate(dad.genome, mom.genome)
         mutate(geno1, muts, s)
         mutate(geno2, muts, s)
-        kid1 = Individual(i, dad.id, mom.id, geno1, s)
-        kid2 = Individual(i+1, mom.id, dad.id, geno2, s)
-        push!(offspring, kid1)
-        push!(offspring, kid2)
+        kid1 = Individual(2*i-1,dad.id,mom.id,geno1,s)
+        kid2 = Individual(2*i,  mom.id,dad.id,geno2,s)
+        [kid1,kid2]
     end
-    offspring
 end
+
 
 function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 env0::EnvironmentS, env1::EnvironmentS,
-                log, trajfile, s::Setting)
+                log, traj, s::Setting)
     indivs0 = deepcopy(pop1.indivs)
     pop0 = Population(1, Ancestral, indivs0)
-    file =
-        if mode == TestMode && trajfile != nothing
-            jldopen(trajfile,"w", compress=true)
-        else
-            nothing
-        end
     e0 = get_selecting_envs(env0, s)
     e1 = get_selecting_envs(env1, s)
     de = (e1 - e0)
     denv = de/dot(de, de)
     muts = Mutation(s)
+    traj["envs0"] = env0
+    traj["envs1"] = env1
     for igen = 1:ngen
         develop(pop1, env1, s)
         ps1 = PopStats(pop1, denv, e0, s)
@@ -122,22 +118,22 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
             @printf(log, "\t%e\t%e\t%e\t%e\t%d",
                     ps0.mismatch, ps0.fitness, ps0.ndev, ps0.ppheno,
                     ps0.nparents)
-            if file != nothing
+            if traj != nothing
                 name0 = @sprintf("pop0_%.3d", igen)
                 name1 = @sprintf("pop1_%.3d", igen)
-                file[name0] = pop0
-                file[name1] = pop1
+                traj[name0] = pop0
+                traj[name1] = pop1
             end
             
             indivs0 = reproduce(pop1, muts, s)
             pop0 = Population(igen+1, Ancestral, indivs0)
+            if igen % 10 == 0
+                flush(log)
+            end
         end
         @printf(log, "\n")
         indivs1 = reproduce(pop1, muts, s)
         pop1 = Population(igen+1, Novel, indivs1)
-    end
-    if file != nothing
-        close(file)
     end
     pop1
 end
@@ -155,13 +151,3 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
     envs0, pop
 end
 
-function test_epochs(nepoch::Int64, ngen::Int64,
-                     pop::Population, envs::EnvironmentS,
-                     log, trajfile::String, s::Setting)
-    envs0 = copy(envs)
-    for iepoch = 1:nepoch
-        envs1 = change_envS(envs0, iepoch + s.seed, s)
-        pop = evolve(TestMode, iepoch, ngen, pop, envs0, envs1, log, trajfile, s)
-        envs0 = envs1
-    end
-end

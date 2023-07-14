@@ -69,6 +69,7 @@ function main()
 
     Threads.@threads for (model, s) in models
         basename = s.basename * ext
+        s.basename = basename
         s.max_pop = max_pop
         open(basename * ".dat", "w") do log
             println(log, "#basename= $s")
