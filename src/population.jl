@@ -83,7 +83,7 @@ function reproduce(pop::Population, muts::Mutation, s::Setting) ::Vector{Individ
     parents = select(pop, s)
     dads = parents[1:2:end-1]
     moms = parents[2:2:end]
-    ThreadsX.mapreduce(append!, 1:length(dads), dads,moms) do i,dad,mom
+    ThreadsX.mapreduce(vcat, 1:length(dads), dads,moms) do i,dad,mom
         geno1, geno2 = mate(dad.genome, mom.genome)
         mutate(geno1, muts, s)
         mutate(geno2, muts, s)
