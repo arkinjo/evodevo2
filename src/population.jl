@@ -76,8 +76,6 @@ function select(pop::Population, s::Setting)
     parents
 end
 
-
-
 function reproduce(pop::Population, muts::Mutation, s::Setting) ::Vector{Individual}
     irange = 1:length(pop.indivs)
     parents = select(pop, s)
