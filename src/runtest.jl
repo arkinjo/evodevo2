@@ -49,8 +49,12 @@ function main()
         envs0 = copy(envs)
         for iepoch = 1:nepoch
             trajfile = @sprintf("%s_traj%.2d.jld2", s.basename, iepoch)
-            envs1 = change_envS(envs0, iepoch + s.seed, s)
+            s.seed += iepoch
+            envs1 = change_envS(envs0, s)
             jldopen(trajfile, "w") do traj
+                traj["setting"] = s
+                traj["envs0"] = env0
+                traj["envs1"] = env1
                 pop = evolve(TestMode, iepoch, ngen, pop, envs0, envs1, log,
                              traj, s)
             end

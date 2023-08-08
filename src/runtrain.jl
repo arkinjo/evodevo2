@@ -75,7 +75,8 @@ function main()
             println(log, "#basename= $s")
             flush(log)
             envs, pop = train_epochs(nepoch, 200, log, s)
-            jldopen(basename * "_train.jld2", "w") do file
+            ofilename = basename * "_train.jld2"
+            jldopen(ofilename, "w") do file
                 file["setting"] = s
                 file["envs"] = envs
                 file["pop0"] = pop

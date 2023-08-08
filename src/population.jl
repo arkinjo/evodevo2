@@ -46,6 +46,15 @@ function Population(naenv::NAEnv, s::Setting)
     Population(1, naenv, indivs)
 end
 
+function get_geno_vecs(pop::Population)
+    mapreduce(hcat, pop.indivs) do indiv
+        vectorize(indiv.genome)
+    end
+end
+
+function get_pheno_vecs(pop::Population)
+    mapreduce(phenotype, hcat, pop.indivs)
+end
 
 function develop(pop::Population, envs::EnvironmentS, s::Setting)
     ThreadsX.foreach(pop.indivs) do indiv
@@ -102,8 +111,7 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
     de = (e1 - e0)
     denv = de/dot(de, de)
     muts = Mutation(s)
-    traj["envs0"] = env0
-    traj["envs1"] = env1
+
     for igen = 1:ngen
         develop(pop1, env1, s)
         ps1 = PopStats(pop1, denv, e0, s)
@@ -140,7 +148,8 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
     envs0 = make_environments(s)
     pop = Population(Novel, s)
     for iepoch = 1:nepoch
-        envs1 = change_envS(envs0, iepoch + s.seed, s)
+        s.seed += iepoch
+        envs1 = change_envS(envs0, s)
         pop = evolve(TrainMode, iepoch, ngen, pop, envs0, envs1,
                      log, nothing, s)
         envs0 = envs1
@@ -148,4 +157,5 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
     end
     envs0, pop
 end
+
 

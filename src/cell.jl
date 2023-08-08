@@ -8,8 +8,6 @@ end
 
 function Cell(ncomps::Vector{Int64})
     states = map(n -> fill(1.0, n), ncomps)
-    #    states[end-1] = ones(ncomps[end-1])
-    # states[3] = ones(ncomps[3])
     pave = zeros(length(states[end]))
     pvar = zeros(length(states[end]))
     Cell(states, pave, pvar)

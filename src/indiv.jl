@@ -28,6 +28,19 @@ function Individual(id::Int64, s::Setting)
     Individual(id, 0, 0, genome, s)
 end
 
+function cues(indiv::Individual, s::Setting)
+    cues = Vector{Float64}()
+    for i = 1:s.num_cell_x
+        cues = vcat(cues,indiv.cells[i,0].p,
+                    indiv.cells[i,s.num_cell_y+1].p)
+    end
+    for j = 1:s.num_cell_y
+        cues = vcat(cues,indiv.cells[0, j].p,
+                    indiv.cells[s.num_cell_x + 1, j].p)
+    end
+    cues
+end
+
 function phenotype(indiv::Individual, s::Setting)
     pheno = Vector()
     for i = 1:s.num_cell_x, j = 1:s.num_cell_y
@@ -63,6 +76,7 @@ function set_cues(indiv::Individual, envs::EnvironmentS, s::Setting)
         indiv.cells[k] = get_cue(env, s)
     end
 end
+
 
 function develop(indiv::Individual, envs::EnvironmentS, s::Setting) ::Bool
     ndev = 0

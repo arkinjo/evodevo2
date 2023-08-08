@@ -9,7 +9,7 @@ s.num_cell_y = 2
 set_omegas(s)
 
 envs0 = make_environments(s);
-envs1 = change_envS(envs0, 111 + s.seed, s);
+envs1 = change_envS(envs0, s);
 
 if ARGS[1] == "no" 
     println("### No threads ###")

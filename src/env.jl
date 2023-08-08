@@ -51,8 +51,8 @@ function change_env(env::Environment, s::Setting)
     Environment(p)
 end
 
-function change_envS(envs::EnvironmentS, seed, s::Setting)
-    Random.seed!(seed)
+function change_envS(envs::EnvironmentS, s::Setting)
+    Random.seed!(s.seed)
     nenvs = Dict{Tuple{Int64,Int64},Environment}()
     a = 0
     for (k,v) in envs
