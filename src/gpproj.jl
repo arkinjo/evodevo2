@@ -27,7 +27,6 @@ function parse_commandline()
     return parse_args(s)
 end
 
-
 function main()
     parsed_args = parse_commandline()
     ngen = parsed_args["ngen"]
@@ -54,6 +53,17 @@ function main()
             name1 = @sprintf("pop1_%.3d", ngen)
             pop0 = file[name0]
             pop1 = file[name1]
+            gp0 = map(pop0.indivs) do indiv
+                g = (vectorize(indiv.genome) - genofst) ⋅ dgeno
+                p = (phenotype(indiv) - sel0) ⋅ denvs
+                (g,p)
+            end
+            gp1 = map(pop1.indivs) do indiv
+                g = (vectorize(indiv.genome) - genofst) ⋅ dgeno
+                p = (phenotype(indiv) - sel0) ⋅ denvs
+                (g,p)
+            end
+
         end
     end
 end
