@@ -1,5 +1,6 @@
 using JLD2,CodecZlib
 using ArgParse
+using Statistics
 
 include("EvoDevo2.jl")
 
@@ -39,11 +40,15 @@ function main()
         lst = @sprintf("pop1_%.3d", ngen)
         poplst = file[lst];
 
-        genofst = get_geno_vecs(popfst)
-        genolst = get_geno_vecs(poplst)
+        genofst = Statistics.mean(get_geno_vecs(popfst); dims=2)
+        genolst = Statistics.mean(get_geno_vecs(poplst); dims=2)
+        dgeno = genolst - genofst
+        dgeno /= norm(dgeno)*norm(dgeno)
+        
         sel0 = get_selecting_envs(envs0,s)
         sel1 = get_selecting_envs(envs1,s)
-        denvs = sel1 -. sel0
+        denvs = sel1 - sel0
+        denvs /= norm(denvs)*norm(denvs)
         for i = 1:ngen
             name0 = @sprintf("pop0_%.3d", ngen)
             name1 = @sprintf("pop1_%.3d", ngen)
