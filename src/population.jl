@@ -52,8 +52,12 @@ function get_geno_vecs(pop::Population)
     end
 end
 
-function get_pheno_vecs(pop::Population)
-    mapreduce(phenotype, hcat, pop.indivs)
+function get_selected_pheno_vecs(pop::Population, s::Setting)
+    mapreduce(i -> selected_phenotype(i,s) , hcat, pop.indivs)
+end
+
+function get_cue_vecs(pop::Population, s::Setting)
+    mapreduce(i -> cues(i,s) , hcat, pop.indivs)
 end
 
 function develop(pop::Population, envs::EnvironmentS, s::Setting)
