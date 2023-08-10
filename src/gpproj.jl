@@ -45,12 +45,13 @@ function main()
         genofst = Statistics.mean(get_geno_vecs(popfst); dims=2)
         genolst = Statistics.mean(get_geno_vecs(poplst); dims=2)
         dgeno = genolst - genofst
-        dgeno /= norm(dgeno)*norm(dgeno)
-        
+        dgeno /= norm(dgeno)^2
+
         sel0 = selecting_envs(envs0,s)
         sel1 = selecting_envs(envs1,s)
         denvs = sel1 - sel0
-        denvs /= norm(denvs)*norm(denvs)
+        denvs /= norm(denvs)^2
+        
         function project(indivs)
             map(indivs) do indiv
                 g = (genotype(indiv) - genofst) ⋅ dgeno
