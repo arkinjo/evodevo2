@@ -41,6 +41,10 @@ function cues(indiv::Individual, s::Setting)
     cues
 end
 
+function genotype(indiv::Individual)
+    vectorize(indiv.genome)
+end
+
 function phenotype(indiv::Individual, s::Setting)
     pheno = Vector()
     for i = 1:s.num_cell_x, j = 1:s.num_cell_y
@@ -50,7 +54,7 @@ function phenotype(indiv::Individual, s::Setting)
     pheno
 end
 
-function get_selected_phenotype(indiv::Individual, s::Setting)
+function selected_phenotype(indiv::Individual, s::Setting)
     f = Vector{Float64}()
     for i = 1:s.num_cell_x
         f = vcat(f, get_face(indiv.cells[i, s.num_cell_y], North))
@@ -59,8 +63,8 @@ function get_selected_phenotype(indiv::Individual, s::Setting)
 end
     
 function set_fitness(indiv::Individual, envs::EnvironmentS, s::Setting)
-    e = get_selecting_envs(envs, s)
-    f = get_selected_phenotype(indiv, s)
+    e = selecting_envs(envs, s)
+    f = selected_phenotype(indiv, s)
     tdev = (e-f) .|> abs |> mean
     indiv.mismatch[] = tdev
     if indiv.ndev[] < s.num_dev

@@ -62,7 +62,7 @@ function change_envS(envs::EnvironmentS, s::Setting)
     nenvs
 end
 
-function get_selecting_envs(envs::EnvironmentS, s::Setting)
+function selecting_envs(envs::EnvironmentS, s::Setting)
     e = Vector{Float64}()
     for i = 1:s.num_cell_x
         e = vcat(e, get_face(envs[i, s.num_cell_y+1], South))

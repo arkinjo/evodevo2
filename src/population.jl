@@ -27,7 +27,7 @@ function PopStats(pop::Population, denv, env0, s::Setting)
         mismatch += indiv.mismatch[]
         fitness += indiv.fitness[1]
         ndev += indiv.ndev[]
-        f = get_selected_phenotype(indiv, s) - env0
+        f = selected_phenotype(indiv, s) - env0
         ppheno += dot(f, denv)
         npar[indiv.mom_id] = getkey(npar, indiv.mom_id, 0) + 1
     end
@@ -106,8 +106,8 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 log, traj, s::Setting)
     indivs0 = deepcopy(pop1.indivs)
     pop0 = Population(1, Ancestral, indivs0)
-    e0 = get_selecting_envs(env0, s)
-    e1 = get_selecting_envs(env1, s)
+    e0 = selecting_envs(env0, s)
+    e1 = selecting_envs(env1, s)
     de = (e1 - e0)
     denv = de/dot(de, de)
     muts = Mutation(s)

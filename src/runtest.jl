@@ -53,8 +53,9 @@ function main()
             envs1 = change_envS(envs0, s)
             jldopen(trajfile, "w") do traj
                 traj["setting"] = s
-                traj["envs0"] = env0
-                traj["envs1"] = env1
+                traj["epoch"] = iepoch
+                traj["envs0"] = envs0
+                traj["envs1"] = envs1
                 pop = evolve(TestMode, iepoch, ngen, pop, envs0, envs1, log,
                              traj, s)
             end
