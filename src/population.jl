@@ -104,6 +104,11 @@ function reproduce(pop::Population, muts::Mutation, s::Setting) ::Vector{Individ
     end
 end
 
+function make_pop_name(naenv::NAEnv, igen)
+    sub = digits(igen-1, base=8, pad=3)[2:end] |> reverse
+    group=join(string.(sub), "/")
+    @sprintf("pop/%s/%s/pop_%.3d", Int(naenv), group, igen)
+end
 
 function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 env0::EnvironmentS, env1::EnvironmentS,
@@ -129,19 +134,21 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                     ps0.mismatch, ps0.fitness, ps0.ndev, ps0.ppheno,
                     ps0.nparents)
             if traj != nothing
-                name0 = @sprintf("pop0_%.3d", igen)
-                name1 = @sprintf("pop1_%.3d", igen)
+                sub = (igen-1) ÷ 10
+                name0 = make_pop_name(Ancestral, igen)
+                name1 = make_pop_name(Novel, igen)
                 traj[name0] = pop0
                 traj[name1] = pop1
             end
             
             indivs0 = reproduce(pop1, muts, s)
             pop0 = Population(igen+1, Ancestral, indivs0)
-            if igen % 10 == 0
-                flush(log)
-            end
         end
         @printf(log, "\n")
+        if igen % 10 == 0
+            flush(log)
+        end
+
         indivs1 = reproduce(pop1, muts, s)
         pop1 = Population(igen+1, Novel, indivs1)
     end

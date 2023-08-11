@@ -1,5 +1,6 @@
 using JLD2
 using ArgParse
+using Printf
 
 include("EvoDevo2.jl")
 
@@ -10,7 +11,12 @@ function parse_commandline()
         help = "random seed (13579)"
         arg_type = Int64
         default = 13579
-        
+
+        "--outdir"
+        help = "output directory for restart JLD2 files"
+        arg_type = String
+        default = "."
+
         "--nepoch"
         help = "number of epochs"
         arg_type = Int64
@@ -58,6 +64,7 @@ function main()
     parsed_args = parse_commandline()
     max_pop = parsed_args["max_pop"]
     nepoch = parsed_args["nepoch"]
+    outdir = parsed_args["outdir"]
     seed = parsed_args["seed"]
     ext = parsed_args["ext"]
 
@@ -67,7 +74,7 @@ function main()
               "nodev" => set_nodev(seed)
               ]
 
-    Threads.@threads for (model, s) in models
+    for (model, s) in models
         basename = s.basename * ext
         s.basename = basename
         s.max_pop = max_pop
@@ -75,11 +82,11 @@ function main()
             println(log, "#basename= $s")
             flush(log)
             envs, pop = train_epochs(nepoch, 200, log, s)
-            ofilename = basename * "_train.jld2"
+            ofilename = @sprintf("%s/%s_train.jld2", outdir, basename)
             jldopen(ofilename, "w") do file
                 file["setting"] = s
                 file["envs"] = envs
-                file["pop0"] = pop
+                file["pop"] = pop
             end
         end
     end

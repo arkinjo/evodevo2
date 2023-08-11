@@ -10,7 +10,12 @@ function parse_commandline()
         help = "random seed (13579)"
         arg_type = Int64
         default = 13579
-        
+
+        "--outdir"
+        help = "output directory for trajectory JLD2 files"
+        arg_type = String
+        default = "."
+
         "--nepoch"
         help = "number of epochs"
         arg_type = Int64
@@ -20,7 +25,12 @@ function parse_commandline()
         help = "number of generations per epoch"
         arg_type = Int64
         default = 200
-        
+
+        "--denv"
+        help = "magnitude of environmental change [0.0 ~ 0.5]"
+        arg_type = Float64
+        default = 0.5
+
         "restart"
         help = "restart JDL2 file"
         required = true
@@ -36,19 +46,23 @@ function main()
     ngen = parsed_args["ngen"]
     seed = parsed_args["seed"]
     resfile = parsed_args["restart"]
+    outdir = parsed_args["outdir"]
     s, envs, pop =
         jldopen(resfile, "r") do file
             s = file["setting"]
             envs = file["envs"]
-            pop = file["pop0"]
-            s,envs, pop
+            pop = file["pop"]
+            s,envs,pop
         end
+    s.denv = parsed_args["denv"]
+
     open(s.basename * "_test.dat", "w") do log
         println(log, "#basename= $s")
         flush(log)
         envs0 = copy(envs)
         for iepoch = 1:nepoch
-            trajfile = @sprintf("%s_traj%.2d.jld2", s.basename, iepoch)
+            trajfile = @sprintf("%s/%s_traj%.2d.jld2",
+                                outdir, s.basename, iepoch)
             s.seed += iepoch
             envs1 = change_envS(envs0, s)
             jldopen(trajfile, "w") do traj

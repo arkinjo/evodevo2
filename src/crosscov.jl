@@ -60,10 +60,8 @@ function main()
         denvs = normalize(sel1 - sel0)
 
         epoch = file["epoch"]
-        name0 = @sprintf("pop0_%.3d", igen)
-        name1 = @sprintf("pop1_%.3d", igen)
-        pop0 = file[name0];
-        pop1 = file[name1];
+        pop0 = file[make_pop_name(Ancestral,igen)];
+        pop1 = file[make_pop_name(Novel,igen)];
 
         pheno0 = get_selected_pheno_vecs(pop0, s)
         pheno1 = get_selected_pheno_vecs(pop1, s)

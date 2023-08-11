@@ -1,6 +1,7 @@
 using JLD2,CodecZlib
 using ArgParse
 using Statistics
+using ThreadsX
 
 include("EvoDevo2.jl")
 
@@ -38,32 +39,29 @@ function main()
         basename = @sprintf("%s/%s_gp%.2d", dir, s.basename, epoch)
         envs0 = file["envs0"]
         envs1 = file["envs1"]
-        popfst = file["pop0_001"];
-        lst = @sprintf("pop1_%.3d", ngen)
-        poplst = file[lst];
+        popfst = file[make_pop_name(Ancestral,1)];
+        poplst = file[make_pop_name(Novel, ngen)];
 
         genofst = Statistics.mean(get_geno_vecs(popfst); dims=2)
         genolst = Statistics.mean(get_geno_vecs(poplst); dims=2)
         dgeno = genolst - genofst
-        dgeno /= norm(dgeno)^2
+        dgeno /= dot(dgeno, dgeno)
 
         sel0 = selecting_envs(envs0,s)
         sel1 = selecting_envs(envs1,s)
         denvs = sel1 - sel0
-        denvs /= norm(denvs)^2
+        denvs /= dot(denvs, denvs)
         
         function project(indivs)
-            map(indivs) do indiv
+            ThreadsX.map(indivs) do indiv
                 g = (genotype(indiv) - genofst) ⋅ dgeno
                 p = (selected_phenotype(indiv, s) - sel0) ⋅ denvs
                 [g,p]
             end
         end
         for igen = 1:ngen
-            name0 = @sprintf("pop0_%.3d", igen)
-            name1 = @sprintf("pop1_%.3d", igen)
-            pop0 = file[name0]
-            pop1 = file[name1]
+            pop0 = file[make_pop_name(Ancestral, igen)]
+            pop1 = file[make_pop_name(Novel, igen)]
             gp0 = project(pop0.indivs)
             gp1 = project(pop1.indivs)
             (mg0,mp0) = mean(gp0)
