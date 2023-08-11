@@ -37,6 +37,7 @@ mutable struct Setting
     selstrength::Float64
 end
 
+const density_default = 0.02
 function default_setting(basename::String, num_layers::Int64=5, seed::Int64=13579)
     num_components = fill(200, num_layers)
     num_env = 200 ÷ 4
@@ -45,9 +46,9 @@ function default_setting(basename::String, num_layers::Int64=5, seed::Int64=1357
     for i = 1:num_layers
         push!(topology, OrderedDict())
         if i > 1 
-            topology[i][i-1] = 0.02
+            topology[i][i-1] = density_default
             if i < num_layers
-                topology[i][i] = 0.02
+                topology[i][i] = density_default
                 push!(afuncs, lcatan)
             else
                 push!(afuncs, tanh)

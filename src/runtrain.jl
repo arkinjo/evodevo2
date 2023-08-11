@@ -45,6 +45,9 @@ end
 function set_nohier(seed)
     s = default_setting("nohier", 3, seed)
     s.num_components[2] = 600
+    s.topology[2][1] *= (1.0/3.0)
+    s.topology[2][2] *= (5.0/9.0)
+    s.topology[3][2] *= (1.0/3.0)
     set_omegas(s)
 end
 
