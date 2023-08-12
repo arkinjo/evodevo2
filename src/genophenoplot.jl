@@ -5,7 +5,7 @@ using ThreadsX
 using Plots
 using Printf
 
-include("/Users/arkinjo/work/GitHub/evodevo2/src/EvoDevo2.jl")
+include("EvoDevo2.jl")
 
 function parse_commandline()
     s = ArgParseSettings()
