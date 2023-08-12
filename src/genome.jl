@@ -68,8 +68,8 @@ function Genome(s::Setting)
     b = Array{OrderedDict{Int64,GenomeMat}}(undef, s.num_layers)
     for l = 1:s.num_layers
         d = OrderedDict{Int64,GenomeMat}()
-        for (k, rho) in s.topology[l]
-            d[k] = make_genome_mat(s.num_components[l],s.num_components[k], rho)
+        for (k, ρ) in s.topology[l]
+            d[k] = make_genome_mat(s.num_components[l],s.num_components[k], ρ)
         end
         b[l] = d
     end

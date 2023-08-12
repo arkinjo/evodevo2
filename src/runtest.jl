@@ -1,4 +1,4 @@
-using JLD2,CodecZlib
+using JLD2,CodecBzip2
 using ArgParse
 
 include("EvoDevo2.jl")
@@ -65,7 +65,7 @@ function main()
                                 outdir, s.basename, iepoch)
             s.seed += iepoch
             envs1 = change_envS(envs0, s)
-            jldopen(trajfile, "w") do traj
+            jldopen(trajfile, "w"; compress=Bzip2Compressor()) do traj
                 traj["setting"] = s
                 traj["epoch"] = iepoch
                 traj["envs0"] = envs0

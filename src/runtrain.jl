@@ -27,10 +27,6 @@ function parse_commandline()
         arg_type = Int64
         default = 200
         
-        "ext"
-        help = "basename extension for output files"
-        default = "00"
-        required = false
     end
 
     return parse_args(s)
@@ -38,12 +34,12 @@ end
 
 
 function set_full(seed)
-    s = default_setting("full", 5, seed)
+    s = default_setting("Full", 5, seed)
     set_omegas(s)
 end
 
 function set_nohier(seed)
-    s = default_setting("nohier", 3, seed)
+    s = default_setting("NoHier", 3, seed)
     s.num_components[2] = 600
     s.topology[2][1] *= (1.0/3.0)
     s.topology[2][2] *= (5.0/9.0)
@@ -52,13 +48,13 @@ function set_nohier(seed)
 end
 
 function set_nocue(seed)
-    s = default_setting("nocue", 5, seed)
+    s = default_setting("NoCue", 5, seed)
     s.with_cue = false
     set_omegas(s)
 end
 
 function set_nodev(seed)
-    s = default_setting("nodev", 5, seed)
+    s = default_setting("NoDev", 5, seed)
     s.num_dev = 1
     set_omegas(s)
 end
@@ -69,16 +65,15 @@ function main()
     nepoch = parsed_args["nepoch"]
     outdir = parsed_args["outdir"]
     seed = parsed_args["seed"]
-    ext = parsed_args["ext"]
 
-    models = ["full" => set_full(seed),
-              "nohier" => set_nohier(seed),
-              "nocue" => set_nocue(seed),
-              "nodev" => set_nodev(seed)
+    models = ["Full" => set_full(seed),
+              "NoHier" => set_nohier(seed),
+              "NoCue" => set_nocue(seed),
+              "NoDev" => set_nodev(seed)
               ]
 
     for (model, s) in models
-        basename = s.basename * ext
+        basename = s.basename
         s.basename = basename
         s.max_pop = max_pop
         open(basename * ".dat", "w") do log
