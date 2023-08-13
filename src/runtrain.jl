@@ -73,11 +73,12 @@ function main()
               ]
 
     for (model, s) in models
+        @printf(stderr, "Model: %s\n", model)
         basename = s.basename
         s.basename = basename
         s.max_pop = max_pop
         open(basename * ".dat", "w") do log
-            println(log, "#basename= $s")
+            println(log,"epoch\tgen\tmis1\tfit1\tndev1\tali1\tpar1")
             flush(log)
             envs, pop = train_epochs(nepoch, 200, log, s)
             ofilename = @sprintf("%s/%s_train.jld2", outdir, basename)

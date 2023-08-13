@@ -1,4 +1,3 @@
-using JLD2,CodecBzip2
 using ArgParse
 
 include("EvoDevo2.jl")
@@ -56,8 +55,9 @@ function main()
         end
     s.denv = parsed_args["denv"]
 
-    open(s.basename * "_test.dat", "w") do log
-        println(log, "#basename= $s")
+    logfile = @sprintf("%s/%s_traj.dat", outdir, s.basename)
+    open(logfile, "w") do log
+        println(log,"epoch\tgen\tmis1\tfit1\tndev1\tali1\tpar1\tmis0\tfit0\tndev0\tali0\tpar0")
         flush(log)
         envs0 = copy(envs)
         for iepoch = 1:nepoch
@@ -65,7 +65,7 @@ function main()
                                 outdir, s.basename, iepoch)
             s.seed += iepoch
             envs1 = change_envS(envs0, s)
-            jldopen(trajfile, "w"; compress=Bzip2Compressor()) do traj
+            jldopen(trajfile, "w"; compress=true) do traj
                 traj["setting"] = s
                 traj["epoch"] = iepoch
                 traj["envs0"] = envs0
