@@ -1,4 +1,3 @@
-using JLD2,CodecBzip2
 using ArgParse
 using Statistics
 using ThreadsX
@@ -66,6 +65,7 @@ function main()
         mps0 = Vector(); dps0 = Vector()
         mps1 = Vector(); dps1 = Vector()
 
+        println("gen\tmg1\tmp1\tdg1\tdp1\tmg0\tmp0\tdg0\tdp0")
         for igen = 1:ngen
             pop0 = file[make_pop_name(Ancestral, igen)]
             pop1 = file[make_pop_name(Novel, igen)]
