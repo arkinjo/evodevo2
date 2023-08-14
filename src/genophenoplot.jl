@@ -79,32 +79,32 @@ function main()
             gp0 = project(pop0.indivs)
             
             push!(gpdata, (igen,
-                           mean(gp1.g),mean(gp1.p),std(gp1.g), std(gp1.p),
-                           mean(gp0.g),mean(gp0.p),std(gp0.g), std(gp0.p)))
+                           mean(gp1.g), mean(gp1.p), std(gp1.g), std(gp1.p),
+                           mean(gp0.g), mean(gp0.p), std(gp0.g), std(gp0.p)))
             
             scatter(size=(600,600), legend_position=:none,
                     xlims=(-0.05, 1.05), ylims=(-0.05, 1.05),
                     xticks=0:0.1:1, yticks=0:0.1:1,
+                    xlabel="Genotype", ylabel="Phenotype",
                     plot_title= @sprintf("%s (gen. %.3d)", s.basename, igen))
             scatter!(gp1.g, gp1.p, label="Novel", markershape=:circle)
             scatter!(gp0.g, gp0.p, label="Anceltral", markershape=:diamond)
-            xlabel!("Genotype")
-            ylabel!("Phenotype")
             oname= @sprintf("%s_%.3d.pdf", basename, igen)
             Plots.pdf(oname)
         end
         cname= @sprintf("%s.csv", basename)
         CSV.write(cname, gpdata)
             
-        scatter(size=(600,600), legend_position=:topleft,
+        scatter(size=(600,600), 
                 plot_title= s.basename,
                 xlims=(-0.05, 1.05), ylims=(-0.05, 1.05),
-                xticks=0:0.1:1, yticks=0:0.1:1)
+                xticks=0:0.1:1, yticks=0:0.1:1,
+                xlabel="Genotype", ylabel="Phenotype")
         scatter!(gpdata.mg1, gpdata.mp1, xerror=gpdata.dg1, yerror=gpdata.dp1,
-                 label="Novel", markershape=:circle)
-                  
+                 label="Novel", markershape=:circle, lc=:auto)
         scatter!(gpdata.mg0, gpdata.mp0, xerror=gpdata.dg0, yerror=gpdata.dp0,
-                 label="Anceltral", markershape=:diamond)
+                 label="Anceltral", markershape=:diamond, lc=:auto)
+
         oname= @sprintf("%s_summary.pdf", basename)
         Plots.pdf(oname)
     end
