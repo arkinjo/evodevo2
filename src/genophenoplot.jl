@@ -1,8 +1,7 @@
 using ArgParse
-using Statistics
-using ThreadsX
 using Plots
 using Printf
+
 
 include("EvoDevo2.jl")
 
@@ -52,58 +51,59 @@ function main()
         genolst = Statistics.mean(get_geno_vecs(poplst); dims=2)
         dgeno = genolst - genofst
         dgeno /= dot(dgeno, dgeno)
-        
+
         function project(indivs)
-            ThreadsX.map(indivs) do indiv
-                g = (genotype(indiv) - genofst) ⋅ dgeno
-                p = (selected_phenotype(indiv, s) - sel0) ⋅ denvs
-                [g,p]
-            end
+            gps =
+                ThreadsX.map(indivs) do indiv
+                    g = (genotype(indiv) - genofst) ⋅ dgeno
+                    p = (selected_phenotype(indiv, s) - sel0) ⋅ denvs
+                    (g,p)
+                end
+            df = DataFrame(gps)
+            rename!(df, :1 => :g, :2 => :p)
+            df
         end
-        mgs0 = Vector(); dgs0 = Vector()
-        mgs1 = Vector(); dgs1 = Vector()
-        mps0 = Vector(); dps0 = Vector()
-        mps1 = Vector(); dps1 = Vector()
 
-        println("gen\tmg1\tmp1\tdg1\tdp1\tmg0\tmp0\tdg0\tdp0")
+        gpdata = DataFrame(gen=Int64[],
+                           mg1=Float64[], mp1=Float64[],
+                           dg1=Float64[], dp1=Float64[],
+                           mg0=Float64[], mp0=Float64[],
+                           dg0=Float64[], dp0=Float64[])
+
         for igen = 1:ngen
-            pop0 = file[make_pop_name(Ancestral, igen)]
-            pop1 = file[make_pop_name(Novel, igen)]
+            @printf(stderr, "Generation %d\n", igen); flush(stderr)
+            pop0 = file[make_pop_name(Ancestral, igen)];
+            pop1 = file[make_pop_name(Novel, igen)];
 
-            gp0 = project(pop0.indivs)
-            (mg0,mp0) = mean(gp0)
-            (dg0,dp0) = std(gp0)
-            push!(mgs0,mg0); push!(dgs0, dg0)
-            push!(mps0,mp0); push!(dps0, dp0)
             gp1 = project(pop1.indivs)
-            (mg1,mp1) = mean(gp1)
-            (dg1,dp1) = std(gp1)
-            push!(mgs1,mg1); push!(dgs1, dg1)
-            push!(mps1,mp1); push!(dps1, dp1)
-
-            @printf("%d\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n",
-                    igen, mg1, mp1, dg1, dp1, mg0, mp0, dg0, dp0)
-
-            g0 = map(x->x[1], gp0); p0 = map(x->x[2], gp0)
-            g1 = map(x->x[1], gp1); p1 = map(x->x[2], gp1)
+            gp0 = project(pop0.indivs)
+            
+            push!(gpdata, (igen,
+                           mean(gp1.g),mean(gp1.p),std(gp1.g), std(gp1.p),
+                           mean(gp0.g),mean(gp0.p),std(gp0.g), std(gp0.p)))
+            
             scatter(size=(600,600), legend_position=:none,
                     xlims=(-0.05, 1.05), ylims=(-0.05, 1.05),
                     xticks=0:0.1:1, yticks=0:0.1:1,
                     plot_title= @sprintf("%s (gen. %.3d)", s.basename, igen))
-            scatter!(g1,p1, label="Novel", markershape=:circle)
-            scatter!(g0,p0, label="Anceltral", markershape=:diamond)
+            scatter!(gp1.g, gp1.p, label="Novel", markershape=:circle)
+            scatter!(gp0.g, gp0.p, label="Anceltral", markershape=:diamond)
             xlabel!("Genotype")
             ylabel!("Phenotype")
             oname= @sprintf("%s_%.3d.pdf", basename, igen)
             Plots.pdf(oname)
         end
+        cname= @sprintf("%s.csv", basename)
+        CSV.write(cname, gpdata)
+            
         scatter(size=(600,600), legend_position=:topleft,
                 plot_title= s.basename,
                 xlims=(-0.05, 1.05), ylims=(-0.05, 1.05),
                 xticks=0:0.1:1, yticks=0:0.1:1)
-        scatter!(mgs1,mps1, xerror=dgs1, yerror=dps1,
+        scatter!(gpdata.mg1, gpdata.mp1, xerror=gpdata.dg1, yerror=gpdata.dp1,
                  label="Novel", markershape=:circle)
-        scatter!(mgs0,mps0, xerror=dgs0, yerror=dps0,
+                  
+        scatter!(gpdata.mg0, gpdata.mp0, xerror=gpdata.dg0, yerror=gpdata.dp0,
                  label="Anceltral", markershape=:diamond)
         oname= @sprintf("%s_summary.pdf", basename)
         Plots.pdf(oname)
