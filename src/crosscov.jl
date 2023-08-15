@@ -8,11 +8,6 @@ include("EvoDevo2.jl")
 function parse_commandline()
     s = ArgParseSettings()
     @add_arg_table s begin
-        "--outdir"
-        help = "output directory for G-P plot"
-        arg_type = String
-        default = "."
-
         "--gen"
         help = "generation number to be analyzed"
         arg_type = Int64
@@ -32,6 +27,7 @@ function anacc(label, cc, denv)
     nrow,ncol = size(cc)
     @printf("%s\tDims\t%d\t%d\n", label, nrow, ncol)
     F = svd(cc)
+    
     stot = sum(F.S.^2) # total cross-covariance
     @printf("%s\tTOT\t%e\n", label, stot)
     ali = abs(F.U[:,1] ⋅ denv)
@@ -49,7 +45,6 @@ end
 function main()
     parsed_args = parse_commandline()
     igen = parsed_args["gen"]
-    dir= parsed_args["outdir"]
     trajfile = parsed_args["traj"]
     jldopen(trajfile, "r") do file
         s = file["setting"]
