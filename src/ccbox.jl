@@ -38,7 +38,7 @@ function anacc(epoch, novanc, geno, cue, denv)
      gc)
 end
 
-function proctraj(trajfile, data)
+function proctraj(trajfile)
     jldopen(trajfile, "r") do file
         s = file["setting"]
         envs0 = file["envs0"]
@@ -62,17 +62,18 @@ function proctraj(trajfile, data)
 
         pc0 = cov(pheno0, cues0; dims=2)
         pg0 = cov(pheno0, geno0; dims=2)
-        push!(data, anacc(epoch, "Anc", pg0, pc0, denvs))
+        anc = anacc(epoch, "Anc", pg0, pc0, denvs)
         
         pc1 = cov(pheno1, cues1; dims=2)
         pg1 = cov(pheno1, geno1; dims=2)
-        push!(data, anacc(epoch, "Nov", pg1, pc1, denvs))
+        nov = anacc(epoch, "Nov", pg1, pc1, denvs)
 
+        (anc, nov)
     end
 
 end
 
-    
+
 function main()
     parsed_args = parse_commandline()
     outfile = parsed_args["out"]
@@ -93,8 +94,13 @@ function main()
                      geno_cue=Float64[] # U1(geno) \cdot U1(cue)
                      )
 
-    for trajfile in trajfiles
-       proctraj(trajfile, data)
+    dlst =
+        ThreadsX.map(trajfiles) do trajfile
+            proctraj(trajfile)
+        end
+    for (anc,nov) in dlst
+        push!(data, anc)
+        push!(data, nov)
     end
     CSV.write(outfile, data)
 
