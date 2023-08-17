@@ -20,7 +20,7 @@ function parse_commandline()
     return parse_args(s)
 end
 
-function anacc(epoch, novanc, geno, cue, denv)
+function anacc(epoch, novanc, geno, cue, denv, pprj)
     G = svd(geno)
     gtot = sum(G.S.^2)
     gali = abs(G.U[:,1] ⋅ denv)
@@ -32,7 +32,10 @@ function anacc(epoch, novanc, geno, cue, denv)
     cs1 = C.S[1]
 
     gc = G.U[:,1] ⋅ C.U[:,1]
+
+    pave,pstd = pprj
     (epoch, novanc,
+     pave,pstd,
      gtot, gs1, (gs1^2)/gtot, gali,
      ctot, cs1, (cs1^2)/ctot, cali,
      gc)
@@ -45,7 +48,9 @@ function proctraj(trajfile)
         envs1 = file["envs1"]
         sel0 = selecting_envs(envs0,s)
         sel1 = selecting_envs(envs1,s)
-        denvs = normalize(sel1 - sel0)
+        dsel = sel1 - sel0
+        paxis = dsel/(dsel ⋅ dsel)
+        denvs = normalize(dsel)
 
         epoch = file["epoch"]
         pop0 = file[make_pop_name(Ancestral,1)];
@@ -53,6 +58,14 @@ function proctraj(trajfile)
 
         pheno0 = get_selected_pheno_vecs(pop0, s)
         pheno1 = get_selected_pheno_vecs(pop1, s)
+
+        function project(phenos)
+            n = size(phenos)[2]
+            prj = ThreadsX.map(i -> (phenos[:,i] - sel0) ⋅ paxis, 1:n)
+            Statistics.mean(prj),Statistics.std(prj)
+        end
+        pprj0 = project(pheno0)
+        pprj1 = project(pheno1)
 
         geno0 = get_geno_vecs(pop0)
         geno1 = get_geno_vecs(pop1)
@@ -62,11 +75,11 @@ function proctraj(trajfile)
 
         pc0 = cov(pheno0, cues0; dims=2)
         pg0 = cov(pheno0, geno0; dims=2)
-        anc = anacc(epoch, "Anc", pg0, pc0, denvs)
+        anc = anacc(epoch, "Anc", pg0, pc0, denvs, pprj0)
         
         pc1 = cov(pheno1, cues1; dims=2)
         pg1 = cov(pheno1, geno1; dims=2)
-        nov = anacc(epoch, "Nov", pg1, pc1, denvs)
+        nov = anacc(epoch, "Nov", pg1, pc1, denvs, pprj1)
 
         (anc, nov)
     end
@@ -80,6 +93,8 @@ function main()
     trajfiles = parsed_args["traj"]
     data = DataFrame(epoch=Int64[],
                      novanc = String[], # Nov or Anc
+                     pave=Float64[], # mean projected phenotype
+                     pstd=Float64[], # stdev of projected phenotype
                      
                      tot_geno=Float64[], # total cross-cov
                      s1_geno=Float64[], # first singular value
