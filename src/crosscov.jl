@@ -52,8 +52,9 @@ function main()
         envs1 = file["envs1"]
         sel0 = selecting_envs(envs0,s)
         sel1 = selecting_envs(envs1,s)
-        denvs = normalize(sel1 - sel0)
-
+        dsel = sel1 - sel0
+        denvs = normalize(dsel)
+                
         epoch = file["epoch"]
         pop0 = file[make_pop_name(Ancestral,igen)];
         pop1 = file[make_pop_name(Novel,igen)];
