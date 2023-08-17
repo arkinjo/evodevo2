@@ -109,10 +109,8 @@ function main()
                      geno_cue=Float64[] # U1(geno) \cdot U1(cue)
                      )
 
-    dlst =
-        ThreadsX.map(trajfiles) do trajfile
-            proctraj(trajfile)
-        end
+    dlst = ThreadsX.map(proctraj, trajfiles)
+
     for (anc,nov) in dlst
         push!(data, anc)
         push!(data, nov)
