@@ -13,14 +13,12 @@ function parse_commandline()
         nargs = '+'
         help = "trajectory JLD2 files"
         arg_type = String
-
-        
     end
 
     return parse_args(s)
 end
 
-function anacc(epoch, novanc, geno, cue, denv, pprj)
+function anacc(label, epoch, novanc, geno, cue, denv, pprj)
     G = svd(geno)
     gtot = sum(G.S.^2)
     gali = abs(G.U[:,1] ⋅ denv)
@@ -34,56 +32,58 @@ function anacc(epoch, novanc, geno, cue, denv, pprj)
     gc = G.U[:,1] ⋅ C.U[:,1]
 
     pave,pstd = pprj
-    (epoch, novanc,
-     pave,pstd,
+    (label, epoch, novanc,
+     pave, pstd,
      gtot, gs1, (gs1^2)/gtot, gali,
      ctot, cs1, (cs1^2)/ctot, cali,
      gc)
 end
 
 function proctraj(trajfile)
-    jldopen(trajfile, "r") do file
-        s = file["setting"]
-        envs0 = file["envs0"]
-        envs1 = file["envs1"]
-        sel0 = selecting_envs(envs0,s)
-        sel1 = selecting_envs(envs1,s)
-        dsel = sel1 - sel0
-        paxis = dsel/(dsel ⋅ dsel)
-        denvs = normalize(dsel)
+    println(stderr, "# $trajfile")
 
-        epoch = file["epoch"]
-        pop0 = file[make_pop_name(Ancestral,1)];
-        pop1 = file[make_pop_name(Novel,1)];
-
-        pheno0 = get_selected_pheno_vecs(pop0, s)
-        pheno1 = get_selected_pheno_vecs(pop1, s)
-
-        function project(phenos)
-            n = size(phenos)[2]
-            prj = ThreadsX.map(i -> (phenos[:,i] - sel0) ⋅ paxis, 1:n)
-            Statistics.mean(prj),Statistics.std(prj)
+    s,epoch,envs0,envs1,pop0,pop1 =
+        jldopen(trajfile, "r") do file
+            file["setting"],
+            file["epoch"],
+            file["envs0"],
+            file["envs1"],
+            file[make_pop_name(Ancestral,1)],
+            file[make_pop_name(Novel,1)]
         end
-        pprj0 = project(pheno0)
-        pprj1 = project(pheno1)
 
-        geno0 = get_geno_vecs(pop0)
-        geno1 = get_geno_vecs(pop1)
+    sel0 = selecting_envs(envs0,s)
+    sel1 = selecting_envs(envs1,s)
+    dsel = sel1 - sel0
+    paxis = dsel/(dsel ⋅ dsel)
+    denvs = normalize(dsel)
 
-        cues0 = get_cue_vecs(pop0, s)
-        cues1 = get_cue_vecs(pop1, s)
+    pheno0 = get_selected_pheno_vecs(pop0, s)
+    pheno1 = get_selected_pheno_vecs(pop1, s)
 
-        pc0 = cov(pheno0, cues0; dims=2)
-        pg0 = cov(pheno0, geno0; dims=2)
-        anc = anacc(epoch, "Anc", pg0, pc0, denvs, pprj0)
-        
-        pc1 = cov(pheno1, cues1; dims=2)
-        pg1 = cov(pheno1, geno1; dims=2)
-        nov = anacc(epoch, "Nov", pg1, pc1, denvs, pprj1)
-
-        (anc, nov)
+    function project(phenos)
+        n = size(phenos)[2]
+        prj = ThreadsX.map(i -> (phenos[:,i] - sel0) ⋅ paxis, 1:n)
+        Statistics.mean(prj),Statistics.std(prj)
     end
+    pprj0 = project(pheno0)
+    pprj1 = project(pheno1)
 
+    geno0 = get_geno_vecs(pop0)
+    geno1 = get_geno_vecs(pop1)
+
+    cues0 = get_cue_vecs(pop0, s)
+    cues1 = get_cue_vecs(pop1, s)
+
+    pc0 = cov(pheno0, cues0; dims=2)
+    pg0 = cov(pheno0, geno0; dims=2)
+    anc = anacc(s.basename, epoch, "Anc", pg0, pc0, denvs, pprj0)
+    
+    pc1 = cov(pheno1, cues1; dims=2)
+    pg1 = cov(pheno1, geno1; dims=2)
+    nov = anacc(s.basename, epoch, "Nov", pg1, pc1, denvs, pprj1)
+
+    (anc, nov)
 end
 
 
@@ -91,8 +91,10 @@ function main()
     parsed_args = parse_commandline()
     outfile = parsed_args["out"]
     trajfiles = parsed_args["traj"]
-    data = DataFrame(epoch=Int64[],
+    data = DataFrame(basename = String[],
+                     epoch=Int64[],
                      novanc = String[], # Nov or Anc
+
                      pave=Float64[], # mean projected phenotype
                      pstd=Float64[], # stdev of projected phenotype
                      
@@ -109,9 +111,7 @@ function main()
                      geno_cue=Float64[] # U1(geno) \cdot U1(cue)
                      )
 
-    dlst = ThreadsX.map(proctraj, trajfiles)
-
-    for (anc,nov) in dlst
+    for (anc,nov) in ThreadsX.map(proctraj, trajfiles)
         push!(data, anc)
         push!(data, nov)
     end
