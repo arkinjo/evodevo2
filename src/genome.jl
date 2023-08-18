@@ -159,11 +159,23 @@ function mate(geno1::Genome, geno2::Genome)
 end
 
 function vectorize(geno::Genome)
-    v = Vector{Float64}()
+    len = 0
     for d in geno.B
-        for B in values(d)
-            v = vcat(v, vcat(B...))
+        for M in values(d)
+            m,n = size(M)
+            len += m*n
         end
     end
-    v
+    vec = zeros(len)
+    for d in geno.B
+        for M in values(d)
+            i = 1
+            for x in values(M)
+                vec[i] = x
+                i += 1
+            end
+        end
+    end
+    vec
 end
+
