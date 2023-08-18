@@ -47,9 +47,7 @@ function Population(naenv::NAEnv, s::Setting)
 end
 
 function get_geno_vecs(pop::Population)
-    mapreduce(hcat, pop.indivs) do indiv
-        vectorize(indiv.genome)
-    end
+    mapreduce(i -> vectorize(i.genome), hcat, pop.indivs)
 end
 
 function get_selected_pheno_vecs(pop::Population, s::Setting)
@@ -168,5 +166,4 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
     end
     envs0, pop
 end
-
 
