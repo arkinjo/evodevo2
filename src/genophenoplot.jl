@@ -69,7 +69,7 @@ function proctraj(dir, ngen, trajfile)
 
         function project(geno,pheno)
             gps =
-                map(1:npop) do i
+                ThreadsX.map(1:npop) do i
                     g = (geno[:,i] - genofst) ⋅ dgeno
                     p = (pheno[:,i] - sel0) ⋅ denvs
                     m1 = norm(pheno[:,i] - sel1, 1)
