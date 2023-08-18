@@ -47,11 +47,11 @@ function Population(naenv::NAEnv, s::Setting)
 end
 
 function get_geno_vecs(pop::Population)
-    mapreduce(i -> vectorize(i.genome), hcat, pop.indivs)
+    mapreduce(genotype, hcat, pop.indivs)
 end
 
 function get_selected_pheno_vecs(pop::Population, s::Setting)
-    mapreduce(i -> selected_phenotype(i,s) , hcat, pop.indivs)
+    mapreduce(i -> selected_phenotype(i,s), hcat, pop.indivs)
 end
 
 function get_cue_vecs(pop::Population, s::Setting)
