@@ -163,6 +163,7 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
                      log, nothing, s)
         envs0 = envs1
         flush(log)
+        GC.gc()
     end
     envs0, pop
 end
