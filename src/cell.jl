@@ -1,9 +1,9 @@
 using Statistics
 
 struct Cell
-    states::Vector{Vector{Float64}}
-    pave::Vector{Float64}
-    pvar::Vector{Float64}
+    states::Vector{Vector{Float32}}
+    pave::Vector{Float32}
+    pvar::Vector{Float32}
 end
 
 function Cell(ncomps::Vector{Int64})
@@ -27,7 +27,7 @@ function get_face(cell::Cell, face::Face)
 end
 
 function update_pave(nstep, cell::Cell, s::Setting)
-    mstep = (nstep < 5) ? Float64(nstep) : 5.0
+    mstep = (nstep < 5) ? Float32(nstep) : 5.0
     α = 2.0/(mstep + 1.0)
 
     for (i,(p,a,v)) in enumerate(zip(cell.states[end], cell.pave, cell.pvar))

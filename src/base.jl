@@ -26,15 +26,15 @@ mutable struct Setting
     num_layers::Int64
     num_dev::Int64
     num_components::Vector{Int64}
-    topology::Vector{OrderedDict{Int64,Float64}}
-    omega::Vector{Float64}
+    topology::Vector{OrderedDict{Int64,Float32}}
+    omega::Vector{Float32}
     afuncs::Vector{Function}
-    state_memory::Vector{Float64}
-    env_noise::Float64
-    mut_rate::Float64
-    conv_dev::Float64
-    denv::Float64
-    selstrength::Float64
+    state_memory::Vector{Float32}
+    env_noise::Float32
+    mut_rate::Float32
+    conv_dev::Float32
+    denv::Float32
+    selstrength::Float32
 end
 
 const density_default = 0.02

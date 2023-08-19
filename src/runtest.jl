@@ -76,6 +76,13 @@ function main()
             envs0 = envs1
             flush(log)
         end
+        resfile = @sprintf("%s/%s_restart%.2d.jld2",
+                           outdir, s.basename, iepoch)
+        jldopen(resfile, "w") do file
+            file["setting"] = s
+            file["envs"] = envs1
+            file["pop"] = pop
+        end
     end
 end
 

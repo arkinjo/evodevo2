@@ -6,7 +6,7 @@ using JLD2
 using Printf
 
 "Each genome matrix is a sparse matrix"
-GenomeMat = SparseMatrixCSC{Float64,Int64}
+GenomeMat = SparseMatrixCSC{Float32,Int64}
 
 """
 F is an array of feedforward matrices.
@@ -18,13 +18,13 @@ end
 
 struct Mutation
     mats::Vector{Any}
-    cats::Categorical{Float64, Vector{Float64}}
-    num_mut::Poisson{Float64}
+    cats::Categorical{Float32, Vector{Float32}}
+    num_mut::Poisson{Float32}
 end
 
 function Mutation(s::Setting)
     mats = Vector()
-    probs = Vector{Float64}()
+    probs = Vector{Float32}()
     tot = 0.0
     for (l, m) in enumerate(s.topology)
         for (k, d) in m
@@ -49,7 +49,7 @@ Make a single genome matrix, `m`-by-`n` sparse matrix with `density`.
 function make_genome_mat(m, n, density)
     I = Vector{Int64}()
     J = Vector{Int64}()
-    V = Vector{Float64}()
+    V = Vector{Float32}()
     for i = 1:m, j = 1:n
         if rand() < density
             push!(I,i)
@@ -76,7 +76,7 @@ function Genome(s::Setting)
     Genome(b)
 end
 
-function mutate(A::GenomeMat, density::Float64, mut_rate::Float64)
+function mutate(A::GenomeMat, density::Float32, mut_rate::Float32)
     (m,n) = size(A)
     poisson = Poisson(mut_rate*m*n)
     nmut = rand(poisson)
@@ -95,7 +95,7 @@ function mutate(A::GenomeMat, density::Float64, mut_rate::Float64)
     dropzeros!(A)
 end
 
-function mutate1(A::GenomeMat, density::Float64)
+function mutate1(A::GenomeMat, density::Float32)
     (m,n) = size(A)
     i = rand(1:m)
     j = rand(1:n)

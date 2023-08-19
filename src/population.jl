@@ -9,10 +9,10 @@ struct Population
 end
 
 struct PopStats
-    mismatch::Float64
-    fitness::Float64
-    ndev::Float64
-    ppheno::Float64
+    mismatch::Float32
+    fitness::Float32
+    ndev::Float32
+    ppheno::Float32
     nparents::Int64
 end
 

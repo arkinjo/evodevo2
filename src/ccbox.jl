@@ -95,20 +95,20 @@ function main()
                      epoch=Int64[],
                      novanc = String[], # Nov or Anc
 
-                     pave=Float64[], # mean projected phenotype
-                     pstd=Float64[], # stdev of projected phenotype
+                     pave=Float32[], # mean projected phenotype
+                     pstd=Float32[], # stdev of projected phenotype
                      
-                     tot_geno=Float64[], # total cross-cov
-                     s1_geno=Float64[], # first singular value
-                     ps1_geno=Float64[], # % first singular value
-                     ali_geno=Float64[], # alignment vs. denv
+                     tot_geno=Float32[], # total cross-cov
+                     s1_geno=Float32[], # first singular value
+                     ps1_geno=Float32[], # % first singular value
+                     ali_geno=Float32[], # alignment vs. denv
 
-                     tot_cue=Float64[], # total cross-cov
-                     s1_cue=Float64[], # first singular value
-                     ps1_cue=Float64[], # % first singular value
-                     ali_cue=Float64[], # alignment vs. denv
+                     tot_cue=Float32[], # total cross-cov
+                     s1_cue=Float32[], # first singular value
+                     ps1_cue=Float32[], # % first singular value
+                     ali_cue=Float32[], # alignment vs. denv
 
-                     geno_cue=Float64[] # U1(geno) \cdot U1(cue)
+                     geno_cue=Float32[] # U1(geno) \cdot U1(cue)
                      )
 
     for (anc,nov) in ThreadsX.map(proctraj, trajfiles)

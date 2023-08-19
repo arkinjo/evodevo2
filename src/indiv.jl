@@ -7,9 +7,9 @@ struct Individual
     dad_id::Int64
     genome::Genome
     cells::Dict{Tuple{Int64,Int64},Union{Cell,Environment}}
-    ndev::Vector{Float64}
-    mismatch::Vector{Float64}
-    fitness::Vector{Float64}
+    ndev::Vector{Float32}
+    mismatch::Vector{Float32}
+    fitness::Vector{Float32}
 end
 
 
@@ -29,7 +29,7 @@ function Individual(id::Int64, s::Setting)
 end
 
 function cues(indiv::Individual, s::Setting)
-    cues = Vector{Float64}()
+    cues = Vector{Float32}()
     for i = 1:s.num_cell_x
         cues = vcat(cues,indiv.cells[i,0].p,
                     indiv.cells[i,s.num_cell_y+1].p)
@@ -55,7 +55,7 @@ function phenotype(indiv::Individual, s::Setting)
 end
 
 function selected_phenotype(indiv::Individual, s::Setting)
-    f = Vector{Float64}()
+    f = Vector{Float32}()
     for i = 1:s.num_cell_x
         f = vcat(f, get_face(indiv.cells[i, s.num_cell_y], North))
     end

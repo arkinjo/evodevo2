@@ -1,7 +1,7 @@
 using Random
 
 struct Environment
-    p::Vector{Float64}
+    p::Vector{Float32}
 end
 
 """
@@ -63,7 +63,7 @@ function change_envS(envs::EnvironmentS, s::Setting)
 end
 
 function selecting_envs(envs::EnvironmentS, s::Setting)
-    e = Vector{Float64}()
+    e = Vector{Float32}()
     for i = 1:s.num_cell_x
         e = vcat(e, get_face(envs[i, s.num_cell_y+1], South))
     end

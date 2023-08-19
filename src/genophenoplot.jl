@@ -34,12 +34,12 @@ end
 
 function mkdf()
     DataFrame(basename=String[], epoch=Int64[], gen=Int64[],
-              mg1=Float64[], mp1=Float64[],
-              dg1=Float64[], dp1=Float64[],
-              gvar1=Float64[], pvar1=Float64[], mis1in1=Float64[], mis1in0=Float64[],
-              mg0=Float64[], mp0=Float64[],
-              dg0=Float64[], dp0=Float64[],
-              gvar0=Float64[], pvar0=Float64[], mis0in1=Float64[], mis0in0=Float64[])
+              mg1=Float32[], mp1=Float32[],
+              dg1=Float32[], dp1=Float32[],
+              gvar1=Float32[], pvar1=Float32[], mis1in1=Float32[], mis1in0=Float32[],
+              mg0=Float32[], mp0=Float32[],
+              dg0=Float32[], dp0=Float32[],
+              gvar0=Float32[], pvar0=Float32[], mis0in1=Float32[], mis0in0=Float32[])
 end
 
 function proctraj(dir, ngen, trajfile)
@@ -140,7 +140,6 @@ function main()
     for traj in trajfiles
         append!(gpdata, proctraj(dir, ngen, traj))
     end
-
     CSV.write(cname, gpdata)
 end
 
