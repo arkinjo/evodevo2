@@ -111,8 +111,13 @@ end
 function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 env0::EnvironmentS, env1::EnvironmentS,
                 log, traj, s::Setting)
-    indivs0 = deepcopy(pop1.indivs)
-    pop0 = Population(1, Ancestral, indivs0)
+    pop0 =
+        if mode == TestMode
+            indivs0 = deepcopy(pop1.indivs)
+            Population(1, Ancestral, indivs0)
+        else
+            nothing
+        end
     e0 = selecting_envs(env0, s)
     e1 = selecting_envs(env1, s)
     de = (e1 - e0)
