@@ -79,7 +79,7 @@ function main()
         s.max_pop = max_pop
         logfile = @sprintf("%s/%s.dat", outdir, basename)
         open(logfile, "w") do log
-            println(log,"epoch\tgen\tmis1\tfit1\tndev1\tali1\tpar1")
+            println(log,"epoch\tgen\tmis1\tfit1\tndev1\tpar1")
             flush(log)
             envs, pop = train_epochs(nepoch, 200, log, s)
             ofilename = @sprintf("%s/%s_train.jld2", outdir, basename)

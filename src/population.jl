@@ -12,30 +12,25 @@ struct PopStats
     mismatch::Float32
     fitness::Float32
     ndev::Float32
-    ppheno::Float32
     nparents::Int64
 end
 
-function PopStats(pop::Population, denv, env0, s::Setting)
+function PopStats(pop::Population, s::Setting)
     mismatch = 0.0
     fitness = 0.0
     ndev = 0.0
-    ppheno = 0.0    
     npop = length(pop.indivs)
     npar = Dict()
     for indiv in pop.indivs
         mismatch += indiv.mismatch[]
         fitness += indiv.fitness[1]
         ndev += indiv.ndev[]
-        f = selected_phenotype(indiv, s) - env0
-        ppheno += dot(f, denv)
         npar[indiv.mom_id] = getkey(npar, indiv.mom_id, 0) + 1
     end
     mismatch /= npop
     fitness /= npop
     ndev /= npop
-    ppheno /= npop
-    PopStats(mismatch, fitness, ndev, ppheno, length(npar))
+    PopStats(mismatch, fitness, ndev, length(npar))
 end
 
 function Population(naenv::NAEnv, s::Setting)
@@ -111,6 +106,8 @@ end
 function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 env0::EnvironmentS, env1::EnvironmentS,
                 log, traj, s::Setting)
+    muts = Mutation(s)
+
     pop0 =
         if mode == TestMode
             indivs0 = deepcopy(pop1.indivs)
@@ -118,24 +115,18 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
         else
             nothing
         end
-    e0 = selecting_envs(env0, s)
-    e1 = selecting_envs(env1, s)
-    de = (e1 - e0)
-    denv = de/dot(de, de)
-    muts = Mutation(s)
 
     for igen = 1:ngen
         develop(pop1, env1, s)
-        ps1 = PopStats(pop1, denv, e0, s)
+        ps1 = PopStats(pop1, s)
         @printf(log, "%3d\t%3d", iepoch, igen)
-        @printf(log, "\t%e\t%e\t%e\t%e\t%d", ps1.mismatch, ps1.fitness,
-                ps1.ndev, ps1.ppheno, ps1.nparents)
+        @printf(log, "\t%e\t%e\t%e\t%d",
+                ps1.mismatch, ps1.fitness, ps1.ndev, ps1.nparents)
         if mode == TestMode
             develop(pop0, env0, s)
-            ps0 = PopStats(pop0, denv, e0, s)
-            @printf(log, "\t%e\t%e\t%e\t%e\t%d",
-                    ps0.mismatch, ps0.fitness, ps0.ndev, ps0.ppheno,
-                    ps0.nparents)
+            ps0 = PopStats(pop0, s)
+            @printf(log, "\t%e\t%e\t%e\t%d",
+                    ps0.mismatch, ps0.fitness, ps0.ndev, ps0.nparents)
             if traj != nothing
                 sub = (igen-1) ÷ 10
                 name0 = make_pop_name(Ancestral, igen)
@@ -164,7 +155,7 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
     for iepoch = 1:nepoch
         s.seed += iepoch
         envs1 = change_envS(envs0, s)
-        pop = evolve(TrainMode, iepoch, ngen, pop, envs0, envs1,
+        @time pop = evolve(TrainMode, iepoch, ngen, pop, envs0, envs1,
                      log, nothing, s)
         envs0 = envs1
         flush(log)

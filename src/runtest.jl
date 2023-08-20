@@ -57,7 +57,7 @@ function main()
 
     logfile = @sprintf("%s/%s_traj.dat", outdir, s.basename)
     open(logfile, "w") do log
-        println(log,"epoch\tgen\tmis1\tfit1\tndev1\tali1\tpar1\tmis0\tfit0\tndev0\tali0\tpar0")
+        println(log,"epoch\tgen\tmis1\tfit1\tndev1\tpar1\tmis0\tfit0\tndev0\tpar0")
         flush(log)
         envs0 = copy(envs)
         for iepoch = 1:nepoch
