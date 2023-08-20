@@ -25,7 +25,7 @@ end
 
 function Individual(id::Int64, s::Setting)
     genome = Genome(s)
-    Individual(id, 0, 0, genome, s)
+    Individual(id, id, id, genome, s)
 end
 
 function cues(indiv::Individual, s::Setting)
