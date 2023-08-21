@@ -6,11 +6,10 @@ using JLD2
 using Printf
 
 "Each genome matrix is a sparse matrix"
-GenomeMat = SparseMatrixCSC{Float32,Int64}
+const GenomeMat = SparseMatrixCSC{Float32,Int64}
 
 """
-F is an array of feedforward matrices.
-B is an array of dictionaries of feedback matrices
+B is an array of dictionaries of feedforward and feedback matrices
 """
 struct Genome
     B::Vector{OrderedDict{Int64,GenomeMat}}
