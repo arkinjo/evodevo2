@@ -34,10 +34,7 @@ function PopStats(pop::Population, s::Setting)
 end
 
 function Population(naenv::NAEnv, s::Setting)
-    indivs = Vector{Individual}()
-    for i = 1:s.max_pop
-        push!(indivs, Individual(i, s))
-    end
+    indivs = ThreadsX.map(i -> Individual(i, s), 1:s.max_pop)
     Population(1, naenv, indivs)
 end
 
