@@ -12,6 +12,11 @@ function parse_commandline()
         arg_type = Int64
         default = 13579
 
+        "--model"
+        help = "Full|NoCue|NoHier|NoDev"
+        arg_type = String
+        default = "Full"
+
         "--outdir"
         help = "output directory for restart JLD2 files"
         arg_type = String
@@ -58,36 +63,37 @@ function set_nodev(seed)
     s.num_dev = 1
     set_omegas(s)
 end
-    
+
 function main()
     parsed_args = parse_commandline()
     max_pop = parsed_args["max_pop"]
     nepoch = parsed_args["nepoch"]
     outdir = parsed_args["outdir"]
+    model = parsed_args["model"]
     seed = parsed_args["seed"]
 
-    models = ["Full" => set_full(seed),
-              "NoHier" => set_nohier(seed),
-              "NoCue" => set_nocue(seed),
-              "NoDev" => set_nodev(seed)
-              ]
+    s = @match model begin
+        "Full" => set_full(seed)
+        "NoHier" => set_nohier(seed)
+        "NoCue" => set_nocue(seed)
+        "NoDev" => set_nodev(seed)
+        _ => println(stderr,"--model must be (Full|NoCue|NoHier|NoDev)")
+    end
 
-    for (model, s) in models
-        @printf(stderr, "Model: %s\n", model)
-        basename = s.basename
-        s.basename = basename
-        s.max_pop = max_pop
-        logfile = @sprintf("%s/%s.dat", outdir, basename)
-        open(logfile, "w") do log
-            println(log,"epoch\tgen\tmis1\tfit1\tndev1\tpar1")
-            flush(log)
-            envs, pop = train_epochs(nepoch, 200, log, s)
-            ofilename = @sprintf("%s/%s_train.jld2", outdir, basename)
-            jldopen(ofilename, "w") do file
-                file["setting"] = s
-                file["envs"] = envs
-                file["pop"] = pop
-            end
+    @printf(stderr, "Model: %s\n", model)
+    basename = s.basename
+    s.basename = basename
+    s.max_pop = max_pop
+    logfile = @sprintf("%s/%s.dat", outdir, basename)
+    open(logfile, "w") do log
+        println(log,"epoch\tgen\tmis1\tfit1\tndev1\tpar1")
+        flush(log)
+        envs, pop = train_epochs(nepoch, 200, log, s)
+        ofilename = @sprintf("%s/%s_train.jld2", outdir, basename)
+        jldopen(ofilename, "w") do file
+            file["setting"] = s
+            file["envs"] = envs
+            file["pop"] = pop
         end
     end
 end
