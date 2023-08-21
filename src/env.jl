@@ -7,21 +7,20 @@ end
 """
 Environments is the surrounding environment of individuals.
 """
-EnvironmentS = Dict{Tuple{Int64, Int64}, Environment}
+const EnvironmentS = Dict{Tuple{Int64, Int64}, Environment}
 
 """
     make_environments(s::Setting)
 """
 function make_environments(s::Setting) ::EnvironmentS
-    Random.seed!(s.seed)
     envs = Dict{Tuple{Int64,Int64},Environment}()
     for i = 1:s.num_cell_x
-        envs[i, 0] = Environment(rand([-1.0, 1.0], s.num_env))
-        envs[i, s.num_cell_y+1] = Environment(rand([-1.0, 1.0], s.num_env))
+        envs[i, 0] = Environment(ones(Float32, s.num_env))
+        envs[i, s.num_cell_y+1] = Environment(ones(Float32, s.num_env))
     end
     for j = 1:s.num_cell_y
-        envs[0, j] = Environment(rand([-1.0, 1.0], s.num_env))
-        envs[s.num_cell_x + 1, j] = Environment(rand([-1.0, 1.0], s.num_env))
+        envs[0, j] = Environment(ones(Float32, s.num_env))
+        envs[s.num_cell_x + 1, j] = Environment(ones(Float32, s.num_env))
     end
     envs
 end
