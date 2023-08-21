@@ -70,8 +70,8 @@ function main()
                 traj["epoch"] = iepoch
                 traj["envs0"] = envs0
                 traj["envs1"] = envs1
-                pop = evolve(TestMode, iepoch, ngen, pop, envs0, envs1, log,
-                             traj, s)
+                @time pop = evolve(TestMode, iepoch, ngen, pop, envs0, envs1,
+                                   log, traj, s)
             end
             envs0 = envs1
             flush(log)
