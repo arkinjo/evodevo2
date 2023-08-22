@@ -39,15 +39,33 @@ function Population(naenv::NAEnv, s::Setting)
 end
 
 function get_geno_vecs(pop::Population)
-    mapreduce(genotype, hcat, pop.indivs)
+    v = genotype(pop.indivs[1])
+    m = zeros(Float32, length(v), length(pop.indivs))
+    m[:,1] = v
+    for i = 2:length(pop.indivs)
+        m[:,i] =  genotype(pop.indivs[i])
+    end
+    m
 end
 
 function get_selected_pheno_vecs(pop::Population, s::Setting)
-    mapreduce(i -> selected_phenotype(i,s), hcat, pop.indivs)
+    v = selected_phenotype(pop.indivs[1],s)
+    m = zeros(Float32, length(v), length(pop.indivs))
+    m[:,1] = v
+    for i = 2:length(pop.indivs)
+        m[:,i] = selected_phenotype(pop.indivs[i],s)
+    end
+    m
 end
 
 function get_cue_vecs(pop::Population, s::Setting)
-    mapreduce(i -> cues(i,s) , hcat, pop.indivs)
+    v = cues(pop.indivs[1],s)
+    m = zeros(Float32, length(v), length(pop.indivs))
+    m[:,1] = v
+    for i = 2:length(pop.indivs)
+        m[:,i] =  cues(pop.indivs[i],s)
+    end
+    m
 end
 
 function develop(pop::Population, envs::EnvironmentS, s::Setting)
@@ -156,7 +174,6 @@ function train_epochs(nepoch::Int64, ngen::Int64, log, s::Setting)
                      log, nothing, s)
         envs0 = envs1
         flush(log)
-        GC.gc()
     end
     envs0, pop
 end

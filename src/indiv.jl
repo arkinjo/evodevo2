@@ -29,14 +29,27 @@ function Individual(id::Int64, s::Setting)
 end
 
 function cues(indiv::Individual, s::Setting)
-    cues = Vector{Float32}()
+    cues = zeros(Float32, 2*s.num_env*(s.num_cell_x + s.num_cell_y))
+    k = 0
     for i = 1:s.num_cell_x
-        cues = vcat(cues,indiv.cells[i,0].p,
-                    indiv.cells[i,s.num_cell_y+1].p)
+        for p in indiv.cells[i,0].p
+            cues[k] = p
+            k += 1
+        end
+        for p in indiv.cells[i,s.num_cell_y+1].p
+            cues[k] = p
+            k += 1
+        end
     end
     for j = 1:s.num_cell_y
-        cues = vcat(cues,indiv.cells[0, j].p,
-                    indiv.cells[s.num_cell_x + 1, j].p)
+        for p in indiv.cells[0, j].p
+            cues[k] = p
+            k += 1
+        end
+        for p in indiv.cells[s.num_cell_x+1, j].p
+            cues[k] = p
+            k += 1
+        end
     end
     cues
 end
@@ -46,7 +59,7 @@ function genotype(indiv::Individual)
 end
 
 function phenotype(indiv::Individual, s::Setting)
-    pheno = Vector()
+    pheno = Vector{Float32}()
     for i = 1:s.num_cell_x, j = 1:s.num_cell_y
         p = phenotype(indiv.cells[i,j])
         pheno = vcat(pheno, p)
@@ -55,9 +68,11 @@ function phenotype(indiv::Individual, s::Setting)
 end
 
 function selected_phenotype(indiv::Individual, s::Setting)
-    f = Vector{Float32}()
+    f = zeros(Float32, s.num_cell_x*s.num_env)
     for i = 1:s.num_cell_x
-        f = vcat(f, get_face(indiv.cells[i, s.num_cell_y], North))
+        ibeg = (i-1)*s.num_env + 1
+        iend = i*s.num_env
+        f[ibeg:iend] = get_face(indiv.cells[i, s.num_cell_y], North)
     end
     f
 end

@@ -165,7 +165,7 @@ function vectorize(geno::Genome)
             len += m*n
         end
     end
-    vec = zeros(len)
+    vec = zeros(Float32,len)
     for d in geno.B
         for M in values(d)
             i = 1

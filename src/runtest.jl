@@ -75,7 +75,6 @@ function main()
             end
             envs0 = envs1
             flush(log)
-            GC.gc()
         end
     end
 end

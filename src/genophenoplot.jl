@@ -113,14 +113,14 @@ function proctraj(dir, ngen, trajfile)
                    sum(var(geno0; dims=2)), sum(var(pheno0; dims=2)), mean(gp0.m1), mean(gp0.m0))
                   )
         end
-        sp = scatter(size=(600,600), 
+        ap = scatter(size=(600,600), 
                 plot_title= s.basename,
                 xlims=(-0.05, 1.05), ylims=(-0.05, 1.05),
                 xticks=0:0.1:1, yticks=0:0.1:1,
                 xlabel="Genotype", ylabel="Phenotype")
-        scatter!(sp, gpdata.mg1, gpdata.mp1, xerror=gpdata.dg1, yerror=gpdata.dp1,
+        scatter!(ap, gpdata.mg1, gpdata.mp1, xerror=gpdata.dg1, yerror=gpdata.dp1,
                  label="Novel", markershape=:circle, lc=:auto)
-        scatter!(sp, gpdata.mg0, gpdata.mp0, xerror=gpdata.dg0, yerror=gpdata.dp0,
+        scatter!(ap, gpdata.mg0, gpdata.mp0, xerror=gpdata.dg0, yerror=gpdata.dp0,
                  label="Anceltral", markershape=:diamond, lc=:auto)
 
         oname= @sprintf("%s_summary.pdf", basename)
@@ -137,6 +137,11 @@ function main()
     trajfiles = parsed_args["traj"]
 
     gpdata = mkdf()
+    
+    # dfs = ThreadsX.map(traj -> proctraj(dir,ngen,traj), trajfiles)
+    # for df in dfs
+    #     append!(gpdata, df)
+    # end
     for traj in trajfiles
         append!(gpdata, proctraj(dir, ngen, traj))
     end
