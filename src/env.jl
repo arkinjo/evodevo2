@@ -30,11 +30,10 @@ function get_face(env::Environment, _)
 end
 
 function get_cue(env::Environment, s::Setting)
-    cue = s.with_cue ? copy(env.p) : fill(1.0, s.num_env)
+    cue = s.with_cue ? copy(env.p) : ones(Float32, s.num_env)
     m = Int64(round(s.env_noise*length(cue)))
     r = randperm(length(cue))
     for i in r[1:m]
-#        cue[i] = s.with_cue ? -cue[i] : rand([-1.0, 1.0])
         cue[i] = -cue[i]
     end
     Environment(cue)

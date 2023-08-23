@@ -69,7 +69,7 @@ function default_setting(basename::String, num_layers::Int64=5, seed::Int64=1357
             200, # num_dev 
             num_components,      # num_components
             topology, 
-            ones(num_layers), # omega (use "set_omegas")
+            ones(Float32, num_layers), # omega (use "set_omegas")
             afuncs, 
             zeros(num_layers), # state_memory
             0.04, # env_noise
