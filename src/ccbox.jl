@@ -20,12 +20,12 @@ end
 
 function anacc(label, epoch, novanc, geno, cue, denv, pprj)
     G = svd(geno)
-    gtot = sum(G.S.^2)
+    gtot = norm(G.S)
     gali = abs(G.U[:,1] ⋅ denv)
     gs1 = G.S[1]
 
     C = svd(cue)
-    ctot = sum(C.S.^2)
+    ctot = norm(C.S)
     cali = abs(C.U[:,1] ⋅ denv)
     cs1 = C.S[1]
 
@@ -34,13 +34,13 @@ function anacc(label, epoch, novanc, geno, cue, denv, pprj)
     pave,pstd = pprj
     (label, epoch, novanc,
      pave, pstd,
-     gtot, gs1, (gs1^2)/gtot, gali,
-     ctot, cs1, (cs1^2)/ctot, cali,
+     gtot, gs1, (gs1)/gtot, gali,
+     ctot, cs1, (cs1)/ctot, cali,
      gc)
 end
 
 function proctraj(trajfile)
-    println(stderr, "# $trajfile")
+    println(stderr, "# $trajfile"); flush(stderr)
 
     s,epoch,envs0,envs1,pop0,pop1 =
         jldopen(trajfile, "r") do file
@@ -111,7 +111,7 @@ function main()
                      geno_cue=Float32[] # U1(geno) \cdot U1(cue)
                      )
 
-    for (anc,nov) in ThreadsX.map(proctraj, trajfiles)
+    for (anc,nov) in map(proctraj, trajfiles)
         push!(data, anc)
         push!(data, nov)
     end
