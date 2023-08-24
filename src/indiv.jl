@@ -30,7 +30,7 @@ end
 
 function cues(indiv::Individual, s::Setting)
     cues = zeros(Float32, 2*s.num_env*(s.num_cell_x + s.num_cell_y))
-    k = 0
+    k = 1
     for i = 1:s.num_cell_x
         for p in indiv.cells[i,0].p
             cues[k] = p
