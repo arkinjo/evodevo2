@@ -67,3 +67,35 @@ function selecting_envs(envs::EnvironmentS, s::Setting)
     end
     e
 end
+
+function flatten(envs::EnvironmentS, s::Setting)
+    v = Vector{Float32}()
+    for i = 1:s.num_cell_x
+        v = vcat(v,envs[i, 0].p)
+        v = vcat(v, envs[i, s.num_cell_y+1].p)
+    end
+    for j = 1:s.num_cell_y
+        v = vcat(v, envs[0, j].p)
+        v = vcat(v, envs[s.num_cell_x + 1, j].p)
+    end
+    v
+end
+
+function envs_from_vec(v, s::Setting)
+    envs = Dict{Tuple{Int64,Int64},Environment}()
+    k = 0
+    for i = 1:s.num_cell_x
+        envs[i, 0] = Environment(v[k*s.num_env+1:(k+1)*s.num_env])
+        k += 1
+        envs[i, s.num_cell_y+1] = Environment(v[k*s.num_env+1:(k+1)*s.num_env])
+        k += 1 
+    end
+    for j = 1:s.num_cell_y
+        envs[0, j] = Environment(v[k*s.num_env+1:(k+1)*s.num_env])
+        k += 1
+        envs[s.num_cell_x + 1, j] = Environment(v[k*s.num_env+1:(k+1)*s.num_env])
+        k += 1
+    end
+    envs
+end
+
