@@ -3,7 +3,6 @@ using Distributions
 using SparseArrays
 using DataStructures
 using JLD2
-using Printf
 
 "Each genome matrix is a sparse matrix"
 const GenomeMat = SparseMatrixCSC{Float32,Int64}

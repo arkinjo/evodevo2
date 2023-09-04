@@ -1,11 +1,7 @@
 """
 Correlated environmental cues via the Hopfield network.
 """
-using Random
-using LinearAlgebra
-using Printf
 
-"Dense Associative Memory"
 struct DAM
     seed::Int64
     ndim::Int64
@@ -35,9 +31,9 @@ function energy(hop::DAM, env)
 end
 
 function flip1(hop::DAM, env, i, β)
-    ene0 = DAMenergy(hop, env)
+    ene0 = energy(hop, env)
     env[i] *= -1 # flip
-    ene1 = DAMenergy(hop, env)
+    ene1 = energy(hop, env)
     dene = ene1 - ene0
     if dene > 0.0 && rand() > exp(-β*dene) # Metropolis
         env[i] *= -1 # reject
@@ -46,7 +42,7 @@ end
 
 function flip(hop::DAM, env, β)
     for i in shuffle(1:hop.ndim)
-        DAMflip1(hop, env, i, β)
+        flip1(hop, env, i, β)
     end
 end
 

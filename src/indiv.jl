@@ -91,8 +91,8 @@ function set_fitness(indiv::Individual, envs::EnvironmentS, s::Setting)
 end
 
 function set_cues(indiv::Individual, envs::EnvironmentS, s::Setting)
-    for (k, env) in envs
-        indiv.cells[k] = get_cue(env, s)
+    for (k, cue) in get_cues(envs, s)
+        indiv.cells[k] = cue
     end
 end
 

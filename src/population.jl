@@ -1,4 +1,3 @@
-using Printf
 using LinearAlgebra
 using ThreadsX
 
