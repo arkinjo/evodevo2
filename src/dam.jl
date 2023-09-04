@@ -49,10 +49,10 @@ end
 "batch-sampling all elements at once."
 function flip_batch(hop::DAM, env, β)
     dots = map(ξ -> ξ ⋅ env, hop.patterns)
-    ene0 = -mapreduce(d -> exp(d/2√hop.ndim), +, dots)/hop.npat
+    ene0 = -mapreduce(d -> exp(d/2√hop.ndim), +, dots)/length(hop.patterns)
     for (i,e) = enumerate(env)
         ene1 = -mapreduce((d,ξ) -> exp((d - 2e*ξ[i])/2√hop.ndim), +,
-                          dots, hop.patterns)/hop.npat
+                          dots, hop.patterns)/length(hop.patterns)
         Δene = ene1 - ene0
         if Δene < 0 || rand() < exp(-β*Δene)
             env[i] *= -1
