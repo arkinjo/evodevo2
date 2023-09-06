@@ -27,7 +27,7 @@ function addpat(hop::DAM, pat)
 end
 
 function energy(hop::DAM, env)
-    -mapreduce(ξ -> exp(ξ ⋅ env/2√hop.ndim), +, hop.patterns)/length(hop.patterns)
+    -mapreduce(ξ -> exp(ξ ⋅ env/3√hop.ndim), +, hop.patterns)
 end
 
 function flip1(hop::DAM, env, i, β)
@@ -49,15 +49,29 @@ end
 "batch-sampling all elements at once."
 function flip_batch(hop::DAM, env, β)
     dots = map(ξ -> ξ ⋅ env, hop.patterns)
-    ene0 = -mapreduce(d -> exp(d/2√hop.ndim), +, dots)/length(hop.patterns)
+    ene0 = -mapreduce(d -> exp(d/3√hop.ndim), +, dots)
     for (i,e) = enumerate(env)
-        ene1 = -mapreduce((d,ξ) -> exp((d - 2e*ξ[i])/2√hop.ndim), +,
-                          dots, hop.patterns)/length(hop.patterns)
+        ene1 = -mapreduce((d,ξ) -> exp((d - 2e*ξ[i])/3√hop.ndim), +,
+                          dots, hop.patterns)
         Δene = ene1 - ene0
         if Δene < 0 || rand() < exp(-β*Δene)
             env[i] *= -1
         end
     end
+end
+
+function sample(hop::DAM, n)
+    ene = map(_ -> energy(hop, rand([-1.0f0, 1.0f0], hop.ndim)), 1:n)
+    μ = mean(ene)
+    σ = std(ene, mean=μ)
+    nene = map(p -> (energy(hop, p)-μ)/σ, hop.patterns)
+    length(hop.patterns), μ, σ, mean(nene), std(nene)
+end
+
+function testsize(ndim)
+    npats = vcat(map(identity, 50:50:1000), map(identity, 1100:100:2000))
+    dams = map(n -> DAM(13, ndim, n), npats)
+    DataFrame(map(d -> sample(d, 500), dams), [:npat, :mu, :sig, :zmean, :zsig])
 end
 
 "for testing"
