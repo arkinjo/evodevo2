@@ -74,9 +74,9 @@ function main()
 
     s = @match model begin
         "Full" => set_full(seed)
-        "NoHier" => set_nohier(seed)
-        "NoCue" => set_nocue(seed)
-        "NoDev" => set_nodev(seed)
+#        "NoHier" => set_nohier(seed)
+#        "NoCue" => set_nocue(seed)
+#        "NoDev" => set_nodev(seed)
         _ => println(stderr,"--model must be (Full|NoCue|NoHier|NoDev)")
     end
 
