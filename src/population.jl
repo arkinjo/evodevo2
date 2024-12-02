@@ -136,6 +136,9 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
         @printf(log, "%3d\t%3d", iepoch, igen)
         @printf(log, "\t%e\t%e\t%e\t%d",
                 ps1.mismatch, ps1.fitness, ps1.ndev, ps1.nparents)
+        indivs1 = reproduce(pop1, muts, s)
+        pop1 = Population(igen+1, Novel, indivs1)
+
         if mode == TestMode
             develop(pop0, env0, s)
             ps0 = PopStats(pop0, s)
@@ -149,7 +152,7 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 traj[name1] = pop1
             end
             
-            indivs0 = reproduce(pop1, muts, s)
+            indivs0 = deepcopy(pop1.indivs)
             pop0 = Population(igen+1, Ancestral, indivs0)
         end
         @printf(log, "\n")
@@ -157,8 +160,6 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
             flush(log)
         end
 
-        indivs1 = reproduce(pop1, muts, s)
-        pop1 = Population(igen+1, Novel, indivs1)
     end
     pop1
 end
