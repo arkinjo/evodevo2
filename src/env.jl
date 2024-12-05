@@ -86,4 +86,3 @@ function envs_of_vec(v, s::Setting)
     end
     envs
 end
-

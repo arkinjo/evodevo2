@@ -1,5 +1,5 @@
 """
-Correlated environmental cues via the Hopfield network.
+Correlated environmental cues via the Hopfield network (Dense Associative Memory, DAM).
 """
 
 struct DAM

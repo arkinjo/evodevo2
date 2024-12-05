@@ -59,7 +59,7 @@ function main()
     open(logfile, "w") do log
         println(log,"epoch\tgen\tmis1\tfit1\tndev1\tpar1\tmis0\tfit0\tndev0\tpar0")
         flush(log)
-        envs0 = copy(envs)
+        envs0 = deepcopy(envs)
         for iepoch = 1:nepoch
             trajfile = @sprintf("%s/%s_traj%.2d.jld2",
                                 outdir, s.basename, iepoch)

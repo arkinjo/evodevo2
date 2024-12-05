@@ -37,6 +37,12 @@ function Population(naenv::NAEnv, s::Setting)
     Population(1, naenv, indivs)
 end
 
+function initialize(pop::Population, s::Setting)
+    for indiv in pop.indivs
+        initialize(indiv, s)
+    end
+end
+
 function get_geno_vecs(pop::Population)
     v = genotype(pop.indivs[1])
     m = zeros(Float32, length(v), length(pop.indivs))
@@ -122,23 +128,20 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 log, traj, s::Setting)
     muts = Mutation(s)
 
-    pop0 =
-        if mode == TestMode
-            indivs0 = deepcopy(pop1.indivs)
-            Population(1, Ancestral, indivs0)
-        else
-            nothing
-        end
-
     for igen = 1:ngen
+        pop0 =
+            if mode == TestMode
+                indivs0 = deepcopy(pop1.indivs)
+                Population(igen, Ancestral, indivs0)
+            else
+                nothing
+            end
+
         develop(pop1, env1, s)
         ps1 = PopStats(pop1, s)
         @printf(log, "%3d\t%3d", iepoch, igen)
         @printf(log, "\t%e\t%e\t%e\t%d",
                 ps1.mismatch, ps1.fitness, ps1.ndev, ps1.nparents)
-        indivs1 = reproduce(pop1, muts, s)
-        pop1 = Population(igen+1, Novel, indivs1)
-
         if mode == TestMode
             develop(pop0, env0, s)
             ps0 = PopStats(pop0, s)
@@ -151,15 +154,15 @@ function evolve(mode, iepoch::Int64, ngen::Int64, pop1::Population,
                 traj[name0] = pop0
                 traj[name1] = pop1
             end
+        else
             
-            indivs0 = deepcopy(pop1.indivs)
-            pop0 = Population(igen+1, Ancestral, indivs0)
         end
         @printf(log, "\n")
         if igen % 10 == 0
             flush(log)
         end
-
+        indivs1 = reproduce(pop1, muts, s)
+        pop1 = Population(igen+1, Novel, indivs1)
     end
     pop1
 end

@@ -23,6 +23,14 @@ function Individual(id, dad, mom, genome::Genome, s::Setting)
     Individual(id, dad, mom, genome, cells, [0], [0], [0, 0])
 end
 
+function initialize(indiv::Individual, s::Setting)
+    for i = 1:s.num_cell_x
+        for j = 1:s.num_cell_y
+            initialize(indiv.cells[i,j])
+        end
+    end
+end
+
 function Individual(id::Int64, s::Setting)
     genome = Genome(s)
     Individual(id, id, id, genome, s)

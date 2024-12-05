@@ -13,6 +13,15 @@ function Cell(ncomps::Vector{Int64})
     Cell(states, pave, pvar)
 end
 
+function initialize(cell::Cell)
+    for k in eachindex(cell.states)
+        for i in eachindex(cell.states[k])
+            cell.states[k][i] = 1.0
+        end
+    end
+end
+
+
 function (cell::Cell)(k)
     cell.states[k]
 end

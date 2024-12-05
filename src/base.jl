@@ -72,7 +72,7 @@ function default_setting(basename::String, num_layers::Int64=5, seed::Int64=1357
             ones(Float32, num_layers), # omega (use "set_omegas")
             afuncs, 
             zeros(num_layers), # state_memory
-            0.04, # env_noise
+            0.05, # env_noise
             0.001, # mut_rate
             1e-5, # conv_dev
             0.5,  # magnitude of environmental changes [0,1]
